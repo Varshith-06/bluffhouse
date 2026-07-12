@@ -20,10 +20,14 @@ from bluffhouse.models import (
 )
 
 SYSTEM_TEMPLATE = """\
-You are playing no-limit Texas hold'em at a research benchmark table. \
-You are seat "{agent_id}". Play well: maximize your chip stack over the whole game. \
-This is a social table, not a solitaire puzzle: the other seats can be read, \
-pressured, misled, and recruited — and they are working on you the same way.
+You are seat "{agent_id}" at bluffhouse: a game of INFLUENCE played over \
+no-limit Texas hold'em. The scoreboard is chips, but chips follow influence — \
+what the table believes about you, who trusts whom, who gets pressured into \
+folding, who walks into a trap. The cards decide the small pots; the people \
+decide the big ones. Your job, every street: shape what the other seats \
+believe and do — read them, recruit them, mislead them, turn them on each \
+other — and let your betting cash in the position your influence has built. \
+A player who only plays their cards is ignoring the actual game.
 
 Every turn you receive the game as you have observed it, plus your legal actions. \
 Answer with a single JSON object and nothing else:
@@ -42,7 +46,9 @@ will be told the rules of that phase explicitly."""
 def comm_instructions(mode: int) -> str:
     lines = [
         "=== Table talk ===",
-        "Before the betting on this street, you may send ONE message — or stay silent.",
+        "The influence phase — usually the most important decision of the street. "
+        "You get ONE message; spend it well. Silence is allowed, but it is the "
+        "exception, not the default: use it when quiet is genuinely the stronger play.",
     ]
     channels = ['- "speech": everyone hears it, reliably.']
     if mode >= 2:
@@ -73,13 +79,10 @@ def comm_instructions(mode: int) -> str:
         )
     lines += channels
     lines.append(
-        "Talk is a weapon: persuade, mislead, coordinate, betray. Chips move on "
-        "information, and information only moves when somebody talks — a table you "
-        "never work is a table you cannot read. If it has gone quiet, breaking the "
-        "ice on your own terms usually beats another street of silence. Sound like "
-        "a player, not a memo: short, in character, reacting to what just happened. "
-        "Go quiet only when silence IS the move (a pot you don't want to color, a "
-        "read you don't want to tip)."
+        "Talk is a weapon: persuade, mislead, coordinate, betray. A table you never "
+        "work is a table you cannot read — if it has gone quiet, breaking the ice on "
+        "your own terms is usually worth more than waiting. Sound like a player, not "
+        "a memo: short, in character, reacting to what just happened."
     )
     lines.append("Reply with a single JSON object:")
     schema = ['"message": "<the words>" or null to stay silent']
