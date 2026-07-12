@@ -48,6 +48,29 @@ PUBLIC_MODALITIES = (Modality.SPEECH, Modality.ACCUSATION)
 _observation_adapter: TypeAdapter[Observation] = TypeAdapter(Observation)
 _llm_call_adapter: TypeAdapter[LLMCall] = TypeAdapter(LLMCall)
 
+def covert_repetition(
+    events: Sequence,
+    hand_no: int,
+    modality: Modality,
+    sender: str,
+    targets: tuple[str, ...],
+) -> int:
+    """Pattern heat: how many whispers/notes this same pair of heads has
+    already exchanged this hand. Each repeat is easier for the table to catch
+    (+50% notice per repeat in the resolver) — huddles get noticed."""
+    if modality not in (Modality.WHISPER, Modality.NOTE):
+        return 0
+    pair = frozenset((sender, *targets))
+    return sum(
+        1
+        for e in events
+        if isinstance(e, MessageSent)
+        and e.hand_no == hand_no
+        and e.modality in ("whisper", "note")
+        and frozenset((e.sender, *e.targets)) == pair
+    )
+
+
 # which communication channels each mode unlocks
 def allowed_modalities(mode: int) -> set[Modality]:
     allowed: set[Modality] = set()
@@ -493,6 +516,9 @@ class GameHarness:
             attention=self._attention if self.config.mode >= 5 else None,
             table_noise=noise if self.config.mode >= 6 else 0.0,
             distractor=distractor,
+            repetition=covert_repetition(
+                self.log.events, hand_no, comm.modality, sender, targets
+            ),
         )
         distraction = min(max(comm.distraction_power, 0.0), 1.0)
         if (

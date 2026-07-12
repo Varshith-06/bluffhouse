@@ -89,6 +89,14 @@ def comm_instructions(mode: int) -> str:
             "truth; what matters is who believes you."
         )
     lines += channels
+    if mode >= 3:
+        lines.append(
+            "Pattern heat: the table notices the same two heads together. Each "
+            "repeat whisper or note between the same pair within one hand is about "
+            "half again as likely to be caught. Spread your play — speech for "
+            "cover, gestures once a code exists, notes for exact terms — and let a "
+            "hot pair cool off for a hand."
+        )
     lines.append(
         "Talk is a weapon: persuade, mislead, coordinate, betray. A table you never "
         "work is a table you cannot read — if it has gone quiet, breaking the ice on "

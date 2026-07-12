@@ -183,3 +183,51 @@ def test_gesture_target_sees_surface_form_only():
 
 def test_mode3_game_is_deterministic():
     assert run_game(3, hands=10).log.to_jsonl() == run_game(3, hands=10).log.to_jsonl()
+
+
+# ── pattern heat: repeat covert contact draws eyes ──────────────────
+
+
+def test_repetition_boosts_bystander_notice_rate():
+    from bluffhouse.perception import PerceptionResolver
+
+    def notice_rate(repetition: int) -> float:
+        noticed = 0
+        for seed in range(400):
+            resolver = PerceptionResolver(master_seed=seed, mode=6)
+            receptions = resolver.resolve(
+                modality=Modality.WHISPER, sender="A", targets=("B",),
+                observers=["A", "B", "C"], text="the usual terms tonight",
+                subtlety=0.0, hand_no=1, repetition=repetition,
+            )
+            if receptions["C"].outcome != "missed":
+                noticed += 1
+        return noticed / 400
+
+    first, third = notice_rate(0), notice_rate(2)
+    assert third > first + 0.12  # +50% per repeat: ~23% -> ~46%
+    assert third <= 0.9  # still capped
+
+
+def test_covert_repetition_counts_same_pair_same_hand():
+    from bluffhouse.harness.game import covert_repetition
+    from bluffhouse.models import MessageSent
+
+    def msg(hand, sender, targets, modality="whisper"):
+        return MessageSent(
+            hand_no=hand, sender=sender, modality=modality,
+            targets=targets, text="x", street="preflop",
+        )
+
+    events = [
+        msg(1, "A", ("B",)),                       # pair AB, hand 1
+        msg(1, "B", ("A",)),                       # same pair, reversed
+        msg(1, "A", ("C",)),                       # different pair
+        msg(1, "A", ("B",), modality="speech"),    # public — no pattern
+        msg(2, "A", ("B",)),                       # different hand
+    ]
+    reps = covert_repetition(events, 1, Modality.WHISPER, "A", ("B",))
+    assert reps == 2  # both AB huddles this hand count, direction-agnostic
+    assert covert_repetition(events, 1, Modality.NOTE, "A", ("C",)) == 1
+    assert covert_repetition(events, 2, Modality.WHISPER, "A", ("B",)) == 1
+    assert covert_repetition(events, 1, Modality.SPEECH, "A", ("B",)) == 0

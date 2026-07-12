@@ -82,6 +82,7 @@ class PerceptionResolver:
         attention: dict[str, AttentionPlan] | None = None,
         table_noise: float = 0.0,
         distractor: str | None = None,
+        repetition: int = 0,
     ) -> dict[str, Reception]:
         self._message_index += 1
         rng = random.Random(
@@ -96,7 +97,7 @@ class PerceptionResolver:
             noise = 0.0 if observer == distractor else table_noise
             receptions[observer] = self._resolve_one(
                 rng, modality, observer, sender, targets, text, subtlety,
-                sender_stealth, plan, noise,
+                sender_stealth, plan, noise, repetition,
             )
         return receptions
 
@@ -124,6 +125,7 @@ class PerceptionResolver:
         stealth: float,
         plan: AttentionPlan | None,
         noise: float,
+        repetition: int = 0,
     ) -> Reception:
         if modality in (Modality.SPEECH, Modality.ACCUSATION):
             return _CLEAR  # public words reach everyone
@@ -148,6 +150,9 @@ class PerceptionResolver:
         if self.mode < 3:
             return Reception(outcome="missed", confidence=0.0)
         p_notice = BASE_NOTICE[modality] * (1.0 - subtlety) * (1.0 - stealth)
+        # pattern heat: the table notices the same two heads together twice —
+        # each repeat covert contact between a pair this hand is easier to catch
+        p_notice *= 1.0 + 0.5 * repetition
         if self.mode >= 5:
             # the attention economy (§07): what you watch, you catch —
             # and an unwatched corner of the table goes dim

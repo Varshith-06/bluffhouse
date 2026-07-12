@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { GameEvent, MessageSent, RunMeta } from "../types";
 import { reduce } from "../lib/reduce";
-import { narrate, intentLine } from "../lib/narrate";
+import { narrate, intentLine, receptionSummary } from "../lib/narrate";
 import { MODALITY_META } from "../lib/format";
 import { Table } from "../replay/Table";
 import { SegText } from "../replay/segments";
@@ -154,17 +154,30 @@ function LiveFeed({ events, agentIds }: { events: GameEvent[]; agentIds: string[
         {events.map((e, i) => {
           const isMsg = e.type === "message_sent";
           const modality = isMsg ? (e as MessageSent).modality : null;
+          const intent = isMsg ? intentLine(e) : null;
+          const recept = isMsg ? receptionSummary(e as MessageSent) : null;
           return (
-            <div
-              key={e.event_id}
-              className={`feed-line ${
-                isMsg ? `msg m-${modality}` : e.visibility !== "public" ? "env" : ""
-              }${i === events.length - 1 ? " last" : ""}`}
-            >
-              {modality && <span className="feed-icon">{MODALITY_META[modality].icon}</span>}
-              <span className="feed-text">
-                <SegText segs={narrate(e)} agentIds={agentIds} />
-              </span>
+            <div key={e.event_id}>
+              <div
+                className={`feed-line ${
+                  isMsg ? `msg m-${modality}` : e.visibility !== "public" ? "env" : ""
+                }${i === events.length - 1 ? " last" : ""}`}
+              >
+                {modality && <span className="feed-icon">{MODALITY_META[modality].icon}</span>}
+                <span className="feed-text">
+                  <SegText segs={narrate(e)} agentIds={agentIds} />
+                </span>
+              </div>
+              {intent && (
+                <div className="feed-sub intent">
+                  <SegText segs={intent} agentIds={agentIds} />
+                </div>
+              )}
+              {recept && (
+                <div className="feed-sub recept">
+                  <SegText segs={recept} agentIds={agentIds} />
+                </div>
+              )}
             </div>
           );
         })}
