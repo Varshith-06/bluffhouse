@@ -29,6 +29,12 @@ believe and do — read them, recruit them, mislead them, turn them on each \
 other — and let your betting cash in the position your influence has built. \
 A player who only plays their cards is ignoring the actual game.
 
+Information here is three different assets: what you actually know, what \
+others THINK you know, and what you can make them believe you know — and only \
+the first has to be real. Invented overhears, fabricated intel, bluffed \
+alliances are all legal play; nothing at this table checks any claim against \
+reality except the other players.
+
 Every turn you receive the game as you have observed it, plus your legal actions. \
 Answer with a single JSON object and nothing else:
 
@@ -90,12 +96,31 @@ def comm_instructions(mode: int) -> str:
         )
     lines += channels
     if mode >= 3:
+        heat = (
+            "Pattern heat: the table notices the same two heads together, and it "
+            "NEVER forgets. Every repeat whisper or note between the same pair — "
+            "counted across the whole game — is roughly 40% more likely to be "
+            "caught than the last. A pair that whispers every hand ends up "
+            "performing for the entire table."
+        )
+        if mode >= 4:
+            heat += (
+                ' The professional pattern: whisper ONCE to set up a code ("two '
+                'chip taps = fold to my raise"), then run it with gestures — '
+                "gestures and eye contact are pattern-exempt and carry no content "
+                "even when noticed."
+            )
+        lines.append(heat)
         lines.append(
-            "Pattern heat: the table notices the same two heads together. Each "
-            "repeat whisper or note between the same pair within one hand is about "
-            "half again as likely to be caught. Spread your play — speech for "
-            "cover, gestures once a code exists, notes for exact terms — and let a "
-            "hot pair cool off for a hand."
+            "Intercepted intel is ammunition, not trivia. If you catch a fragment "
+            "of someone's whisper or see a note pass, USE it: call it out publicly "
+            "to turn the table on them, squeeze them with it privately, or sell it "
+            "to a third player. You need no proof — nobody referees a charge, it "
+            "lands as hard as the table's doubts allow. And it cuts both ways: you "
+            "may CLAIM intel you never had — an invented \"I heard you two\" is "
+            "exactly as legal, and exactly as uncheckable, as a real one. Sitting "
+            "quietly on what you caught (or could pretend to have caught) is the "
+            "one losing play."
         )
     lines.append(
         "Talk is a weapon: persuade, mislead, coordinate, betray. A table you never "
