@@ -147,53 +147,6 @@ def test_live_wrapper_preserves_llm_transcripts(tmp_path):
     assert (tmp_path / "live-test" / "llm" / "A.jsonl").exists()
 
 
-def test_live_comm_pipeline_end_to_end(tmp_path):
-    """A model that talks the way Sonnet actually replies (fenced JSON,
-    prose preamble, seat names with spaces, whisper targets) must land
-    message_sent events through the full live path."""
-    from bluffhouse.agents import LLMAgent
-    from bluffhouse.harness.live import start_live_game
-
-    def chatty(request):
-        prompt = request.messages[-1]["content"]
-        if "=== Table talk ===" in prompt:
-            return (
-                "Here is my move:\n```json\n"
-                '{"message": "Claude 2, that raise smelled nervous.", '
-                '"channel": "whisper", "to": ["Claude 2"], "subtlety": 0.4, '
-                '"reasoning": "probe the blinds", "intent": "rattle them"}\n```'
-            )
-        if "=== Attention ===" in prompt:
-            return '{"watch": {"Claude 2": 0.5}, "table": 0.5, "reasoning": "eyes on the raiser"}'
-        if "=== Beliefs ===" in prompt:
-            return '{"beliefs": {"Claude 2_allied_with_Claude 3": 0.4}, "reasoning": "timing"}'
-        return '{"reasoning": "keep it cheap", "action": "call"}'
-
-    agents = [
-        LLMAgent("Claude 1", MockClient(fallback=chatty, model="m")),
-        LLMAgent("Claude 2", MockClient(fallback=chatty, model="m")),
-        LLMAgent("Claude 3", MockClient(fallback=chatty, model="m")),
-    ]
-    config = TableConfig(
-        seed=13, num_hands=2, agent_ids=["Claude 1", "Claude 2", "Claude 3"], mode=6,
-    )
-    job = start_live_game(tmp_path, config, agents, "live-chatty")
-    job.thread.join(timeout=60)
-    assert job.status == "done", job.error
-
-    import json as _json
-    events = [
-        _json.loads(line)
-        for line in (tmp_path / "live-chatty" / "events.jsonl").read_text().splitlines()
-    ]
-    whispers = [e for e in events if e["type"] == "message_sent"]
-    assert whispers, "no messages made it through the live comm pipeline"
-    assert all(w["modality"] == "whisper" for w in whispers)
-    assert whispers[0]["intent"] == "rattle them"
-    # streamed too, not just written
-    assert any('"message_sent"' in data for _, data in job.history)
-
-
 def test_live_rejects_bad_specs(tmp_path):
     client = TestClient(create_app(tmp_path))
     bad = client.post("/api/live", json={

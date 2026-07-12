@@ -82,7 +82,13 @@ def comm_instructions(mode: int) -> str:
         "Talk is a weapon: persuade, mislead, coordinate, betray. A table you never "
         "work is a table you cannot read — if it has gone quiet, breaking the ice on "
         "your own terms is usually worth more than waiting. Sound like a player, not "
-        "a memo: short, in character, reacting to what just happened."
+        "a memo: short, in character, reacting to what just happened. Two traps that "
+        "cost more than they protect: (1) \"silence protects my hand\" — silence is "
+        "read too, usually as tight-and-beatable, while talking lets you AUTHOR what "
+        "the table learns; a false tell beats no tell. (2) \"weak hand, nothing to "
+        "say\" — talk is not about this hand's cards. Image, alliances, and tilt "
+        "compound across the whole game, and your voice does not fold when your "
+        "cards do."
     )
     lines.append("Reply with a single JSON object:")
     schema = ['"message": "<the words>" or null to stay silent']
