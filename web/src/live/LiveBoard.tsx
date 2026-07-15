@@ -23,19 +23,26 @@ export function LiveBoard({
   onStop: () => void;
   onReset: () => void;
 }) {
-  const run: RunMeta = useMemo(
-    () => ({
+  const run: RunMeta = useMemo(() => {
+    // once the game ends, the last hand's stacks become the final standings
+    let finalStacks: Record<string, number> = {};
+    if (done) {
+      for (const e of events) {
+        if (e.type === "hand_ended") finalStacks = e.stacks;
+        if (e.type === "game_ended") finalStacks = e.stacks;
+      }
+    }
+    return {
       seed: config.seed,
       agent_ids: config.agent_ids,
       small_blind: config.small_blind,
       big_blind: config.big_blind,
       starting_stack: config.starting_stack,
       hands_played: config.num_hands,
-      final_stacks: {},
+      final_stacks: finalStacks,
       ledgers: {},
-    }),
-    [config],
-  );
+    };
+  }, [config, done, events]);
 
   const handEvents = useMemo(() => {
     const current = events.length ? events[events.length - 1].hand_no : 0;
@@ -114,6 +121,7 @@ export function LiveBoard({
             pov="truth"
             hasLedgers={hasLedgers}
             presenting={false}
+            finale={done?.status === "done"}
           />
         ) : (
           <div className="live-waiting">Shuffling up…</div>

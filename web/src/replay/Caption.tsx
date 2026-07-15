@@ -19,10 +19,12 @@ export function Caption({
 }) {
   if (!event) return <div className="caption" />;
 
+  const accent = event.type === "message_sent" ? ` m-${event.modality}` : "";
+
   if (pov === "truth") {
     const intent = intentLine(event);
     return (
-      <div className={`caption${presenting ? " big" : ""}`} key={event.event_id}>
+      <div className={`caption${presenting ? " big" : ""}${accent}`} key={event.event_id}>
         <span className="caption-kicker">the table sees everything</span>
         <div className="caption-line">
           <SegText segs={narrate(event)} agentIds={agentIds} />
@@ -39,7 +41,7 @@ export function Caption({
   const obs = index.obsByAgent[pov]?.get(event.event_id);
   return (
     <div
-      className={`caption${presenting ? " big" : ""}${obs ? "" : " dim"}`}
+      className={`caption${presenting ? " big" : ""}${obs ? accent : " dim"}`}
       key={event.event_id + pov}
     >
       <span className="caption-kicker">what {pov} sees</span>

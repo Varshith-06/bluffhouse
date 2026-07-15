@@ -8,6 +8,7 @@ import { seatGeometry } from "./geometry";
 import { Seat } from "./Seat";
 import { CardFace } from "./CardFace";
 import { EffectsLayer } from "./EffectsLayer";
+import { AnimatedNumber } from "./AnimatedNumber";
 
 export function Table({
   run,
@@ -18,6 +19,7 @@ export function Table({
   pov,
   hasLedgers,
   presenting,
+  finale = false,
 }: {
   run: RunMeta;
   events: GameEvent[];
@@ -27,6 +29,7 @@ export function Table({
   pov: Pov;
   hasLedgers: boolean;
   presenting: boolean;
+  finale?: boolean;
 }) {
   const event = events[cursor];
   const geoms = useMemo(() => seatGeometry(state.order), [state.order.join("|")]);
@@ -38,13 +41,25 @@ export function Table({
   const pot = potSize(state);
   const street = streetOf(state);
 
+  // spotlight: during a message, dim everyone who isn't part of the moment
+  // (ground truth only — a POV must never reveal who else noticed)
+  const spotlight = useMemo(() => {
+    if (pov !== "truth" || event?.type !== "message_sent" || event.modality === "speech")
+      return null;
+    const inLight = new Set([event.sender, ...event.targets]);
+    for (const [agent, r] of Object.entries(event.receptions ?? {})) {
+      if (r.outcome !== "missed") inLight.add(agent);
+    }
+    return inLight;
+  }, [pov, event]);
+
   return (
     <div className={`table-wrap${presenting ? " big" : ""}`}>
       <div className="felt">
         <div className="felt-inner" />
 
         <div className="table-center">
-          <div className="street-label">
+          <div className="street-label" key={`${event?.hand_no}-${street}`}>
             hand {event?.hand_no ?? ""} · {street}
           </div>
           <div className="board">
@@ -54,7 +69,9 @@ export function Table({
           </div>
           <div className={`pot${pot > 0 ? "" : " empty"}`}>
             <span className="pot-chip" />
-            <span className="mono">{pot}</span>
+            <span className="mono">
+              <AnimatedNumber value={pot} />
+            </span>
           </div>
         </div>
 
@@ -71,6 +88,7 @@ export function Table({
             showHeat={hasLedgers}
             isButton={state.button === id}
             bigBlind={run.big_blind}
+            faded={Boolean(spotlight && !spotlight.has(id))}
           />
         ))}
 
@@ -79,7 +97,39 @@ export function Table({
         )}
 
         <EffectsLayer event={event} state={state} geoms={geoms} pov={pov} agentIds={run.agent_ids} />
+
+        {event?.type === "hand_started" && (
+          <div className="hand-banner" key={event.event_id}>
+            {event.hand_no === 1 && <span className="hand-banner-brand">bluffhouse</span>}
+            <span className="hand-banner-no">HAND {event.hand_no}</span>
+          </div>
+        )}
+
+        {finale && <Standings run={run} agentIds={run.agent_ids} />}
       </div>
+    </div>
+  );
+}
+
+function Standings({ run, agentIds }: { run: RunMeta; agentIds: string[] }) {
+  const ranked = Object.entries(run.final_stacks).sort((a, b) => b[1] - a[1]);
+  if (!ranked.length) return null;
+  return (
+    <div className="standings">
+      <div className="standings-title">FINAL STANDINGS</div>
+      {ranked.map(([id, stack], i) => (
+        <div className={`standings-row${i === 0 ? " first" : ""}`} key={id} style={{ animationDelay: `${0.3 + i * 0.18}s` }}>
+          <span className="standings-rank">{i === 0 ? "👑" : i + 1}</span>
+          <span className="standings-name" style={{ color: playerColor(agentIds, id) }}>
+            {id}
+          </span>
+          <span className="standings-stack mono">{stack}</span>
+          <span className={`standings-delta mono ${stack >= run.starting_stack ? "up" : "down"}`}>
+            {stack >= run.starting_stack ? "+" : ""}
+            {stack - run.starting_stack}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

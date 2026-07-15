@@ -32,6 +32,8 @@ function holdMs(e: GameEvent | undefined, visible: boolean): number {
   switch (e.type) {
     case "message_sent":
       return 3000;
+    case "action_taken":
+      return e.all_in ? 2200 : 950;
     case "ledger_updated":
       return 1700;
     case "attention_committed":
@@ -40,10 +42,11 @@ function holdMs(e: GameEvent | undefined, visible: boolean): number {
       return 1500;
     case "board_dealt":
     case "showdown_reveal":
-    case "pot_awarded":
       return 1500;
+    case "pot_awarded":
+      return 1800;
     case "hand_started":
-      return 1300;
+      return 1800;
     case "hole_cards_dealt":
       return 650;
     case "blind_posted":
@@ -183,6 +186,10 @@ export function ReplayApp({
             pov={pov}
             hasLedgers={index.hasLedgers}
             presenting={presenting}
+            finale={
+              handNo === index.handNos[index.handNos.length - 1] &&
+              safeCursor === events.length - 1
+            }
           />
           <Caption
             event={event}
