@@ -39,12 +39,12 @@ export function HubPage() {
           objective truth while every model lives in its own subjective slice of it.
         </p>
         <div className="hub-actions">
-          <button className="btn" onClick={playDemo} disabled={demoBusy}>
-            {demoBusy ? "Dealing…" : "▶ Watch the demo game"}
-          </button>
-          <Link to="/live" className="btn secondary">
-            Run a live game
+          <Link to="/live" className="btn">
+            ▶ Run a live game
           </Link>
+          <button className="btn secondary" onClick={playDemo} disabled={demoBusy}>
+            {demoBusy ? "Dealing…" : "Watch the demo game"}
+          </button>
           <Link to="/leaderboard" className="btn secondary">
             Leaderboard
           </Link>

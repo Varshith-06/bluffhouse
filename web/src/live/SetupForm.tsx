@@ -43,6 +43,22 @@ const blankSeat = (kind: SeatKind = "llm"): SeatDraft => ({
 
 const botSeat = (bot: string): SeatDraft => ({ ...blankSeat("bot"), bot });
 
+const llmSeat = (provider: string, model: string, name: string): SeatDraft => ({
+  ...blankSeat("llm"),
+  provider,
+  model,
+  name,
+});
+
+// the default table: one Anthropic seat, four frontier models via OpenRouter
+const FRONTIER_TABLE: SeatDraft[] = [
+  llmSeat("anthropic", "claude-opus-4-8", "Claude"),
+  llmSeat("openrouter", "openai/gpt-5.5", "GPT"),
+  llmSeat("openrouter", "deepseek/deepseek-v4-flash", "DeepSeek"),
+  llmSeat("openrouter", "z-ai/glm-5.2", "GLM"),
+  llmSeat("openrouter", "google/gemini-3.5-flash", "Gemini"),
+];
+
 export function SetupForm({
   busy,
   onStart,
@@ -50,12 +66,7 @@ export function SetupForm({
   busy: boolean;
   onStart: (req: LiveStartRequest) => void;
 }) {
-  const [seats, setSeats] = useState<SeatDraft[]>([
-    blankSeat(),
-    blankSeat(),
-    botSeat("checkcall"),
-    botSeat("random"),
-  ]);
+  const [seats, setSeats] = useState<SeatDraft[]>(FRONTIER_TABLE.map((s) => ({ ...s })));
   const [mode, setMode] = useState(6);
   const [hands, setHands] = useState(6);
   const [seed, setSeed] = useState<string>("");
@@ -69,11 +80,18 @@ export function SetupForm({
     setSeats((s) => s.map((seat, k) => (k === i ? { ...seat, ...p } : seat)));
 
   const submit = () => {
+    // one pasted key covers every seat on the same provider
+    const providerKeys: Record<string, string> = {};
+    for (const s of seats) {
+      if (s.kind === "llm" && s.apiKey.trim() && !providerKeys[s.provider]) {
+        providerKeys[s.provider] = s.apiKey.trim();
+      }
+    }
     onStart({
       seats: seats.map((s) => ({
         spec: s.kind === "bot" ? s.bot : `${s.provider}:${s.model.trim()}`,
         name: s.name.trim() || null,
-        api_key: s.apiKey.trim() || null,
+        api_key: s.kind === "llm" ? s.apiKey.trim() || providerKeys[s.provider] || null : null,
       })),
       hands,
       mode,
@@ -109,14 +127,7 @@ export function SetupForm({
         </button>
         <button
           className="btn secondary"
-          onClick={() =>
-            setSeats([
-              { ...blankSeat(), provider: "anthropic", name: "Claude" },
-              { ...blankSeat(), provider: "openai", model: "gpt-5.2", name: "GPT" },
-              { ...blankSeat(), provider: "xai", model: "grok-4", name: "Grok" },
-              { ...blankSeat(), provider: "ollama", model: "llama4", name: "Llama" },
-            ])
-          }
+          onClick={() => setSeats(FRONTIER_TABLE.map((s) => ({ ...s })))}
         >
           Frontier table
         </button>
@@ -188,7 +199,7 @@ export function SetupForm({
                   {provider.needsKey && (
                     <input
                       type="password"
-                      placeholder="API key (blank = server env)"
+                      placeholder="API key (shared across same-provider seats)"
                       value={s.apiKey}
                       onChange={(e) => patch(i, { apiKey: e.target.value })}
                       autoComplete="off"
