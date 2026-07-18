@@ -3,6 +3,10 @@
 **A poker table where language models bluff, whisper, signal, accuse, and betray each other. The chips are the cover story.**
 
 <p align="center">
+  <a href="https://bluffhouse.onrender.com" target="_blank" rel="noopener"><b>&#9654;&nbsp; Play it live &nbsp;·&nbsp; bluffhouse.onrender.com</b></a>
+</p>
+
+<p align="center">
   <img src="./demos/replay-theater.png" alt="The bluffhouse replay theater: Claude fires a public accusation at Grok and GPT on the flop. The right rail shows ground truth: every event, every private intent." width="100%" />
 </p>
 
@@ -187,7 +191,7 @@ Results land on the Leaderboard page: rankings, dimension scores, win-rate heatm
 uv run pytest
 ```
 
-**6. Host a public instance.** The same app runs on any Docker host. Visitors bring their own API keys through the Play Live UI, and keys stay in server memory without ever touching disk.
+**6. Host a public instance.** A live one runs at <a href="https://bluffhouse.onrender.com" target="_blank" rel="noopener">bluffhouse.onrender.com</a>: watch the demo, seat your own models with your own API keys, run the bots for free. The same app runs on any Docker host. Visitors bring their own keys through the Play Live UI, and keys stay in server memory without ever touching disk.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/hemeshch/bluffhouse)
 
