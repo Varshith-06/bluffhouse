@@ -140,6 +140,37 @@ Around the chips sits a scorecard of mechanical, judge-free dimensions read stra
 
 Deliberately absent: any truth-refereed social score. Manipulation that works shows up where it should, in chips.
 
+### Results: Mistral's small models
+
+Five of Mistral's small and open-weight models, five rotations of the same seeded mode-6 game, 15 hands requested, 5000-chip stacks at 5/10 blinds (500BB deep), seed 42:
+
+```
+entrant                 adj chips  raw     poker  poker qual  belief acc  detection  info ctrl  cover  discipline
+----------------------  ---------  ------  -----  ----------  ----------  ---------  ---------  -----  ----------
+open-mistral-nemo       +10000.0   +50000  100    100         61          34         95         100    50
+magistral-small-latest   +5000.0   +25000  67     0           32          0          33         100    0
+ministral-3b-latest      -5000.0   -25000  0      34          0           96         100        0      0
+ministral-8b-latest      -5000.0   -25000  0      35          76          100        0          100    100
+mistral-small-latest     -5000.0   -25000  0      93          100         43         0          100    50
+```
+
+**Read this table with care.** Not one game reached the 15-hand limit — they ran 3 to 9 hands (mean 6.6) and every single one ended with one player holding all 25000 chips and the other four on exactly zero. That is why `adj chips` lands on clean multiples of the table total instead of a spread: bust-out is absolute, so the metric saturates and stops separating skill from variance.
+
+The cause is in the action mix. Across all five rotations, **55% of every action taken was a raise** (197 of 358), against 5% checks and 11% folds. These models do not size bets; they shove. An earlier identical run at 1000-chip stacks produced the same structure, so this is not an artifact of stack depth — going 5× deeper changed the numbers and not the shape.
+
+So the honest reading is a finding about aggression control, not a social-manipulation ranking. The scorecard's covert-communication dimensions barely got exercised: a 6-hand game leaves almost no room for a read to form, a whisper to land, or a lie to mature. `detection` and `information control` here are near-noise, and the ordering above mostly records who won the resulting coinflips.
+
+Reproduce it with:
+
+```bash
+export MISTRAL_API_KEY=...
+uv run bluffhouse bench \
+  --models mistral:ministral-3b-latest,mistral:ministral-8b-latest,mistral:mistral-small-latest,mistral:open-mistral-nemo,mistral:magistral-small-latest \
+  --hands 15 --rotations 5 --mode 6 --seed 42 --stack 5000
+```
+
+Mistral's free tier allows 50 requests and 50000 tokens per minute. Mode-6 prompts are large enough that the token ceiling binds first, so keep `BLUFFHOUSE_MISTRAL_CONCURRENCY=2`; the run above took ~900 calls and returned 7 provider errors (0.8%). Push concurrency higher and 429s start landing, and a rate-limited agent silently falls back to a safe action — which looks exactly like bad play in the results.
+
 ## Set it up yourself
 
 You need [uv](https://docs.astral.sh/uv/) and git. Node is optional and only needed if you want to hack on the frontend.
@@ -162,7 +193,7 @@ uv run bluffhouse demo
 uv run bluffhouse serve
 ```
 
-**3. Run a live game with real models.** Click **Play live**, seat 2 to 10 players, pick a provider per seat (Anthropic, OpenAI, xAI, OpenRouter, or local models through Ollama), paste API keys in the UI, and watch the game stream onto the table. Keys stay in memory and touch no disk. The **Bots scrimmage** preset plays a full game free.
+**3. Run a live game with real models.** Click **Play live**, seat 2 to 10 players, pick a provider per seat (Anthropic, OpenAI, xAI, OpenRouter, Mistral, or local models through Ollama), paste API keys in the UI, and watch the game stream onto the table. Keys stay in memory and touch no disk. The **Bots scrimmage** preset plays a full game free.
 
 You can also drive games from the CLI, with keys from your environment:
 

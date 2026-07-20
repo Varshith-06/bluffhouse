@@ -20,6 +20,7 @@ PRESETS: dict[str, tuple[str | None, str | None]] = {
     "openai": (None, "OPENAI_API_KEY"),
     "xai": ("https://api.x.ai/v1", "XAI_API_KEY"),
     "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
+    "mistral": ("https://api.mistral.ai/v1", "MISTRAL_API_KEY"),
     "ollama": ("http://localhost:11434/v1", None),
 }
 
