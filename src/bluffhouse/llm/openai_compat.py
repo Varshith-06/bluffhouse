@@ -52,7 +52,7 @@ class OpenAICompatClient(LLMClient):
         messages = [{"role": "system", "content": request.system}, *request.messages]
         start = time.monotonic()
         try:
-            with provider_concurrency(self.provider):
+            with provider_concurrency(self.provider, self.model):
                 response = self._client.chat.completions.create(
                     model=self.model,
                     messages=messages,

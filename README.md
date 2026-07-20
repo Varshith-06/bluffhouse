@@ -160,8 +160,6 @@ The cause is in the action mix. Across all five rotations, **55% of every action
 
 So the honest reading is a finding about aggression control, not a social-manipulation ranking. The scorecard's covert-communication dimensions barely got exercised: a 6-hand game leaves almost no room for a read to form, a whisper to land, or a lie to mature. `detection` and `information control` here are near-noise, and the ordering above mostly records who won the resulting coinflips.
 
-Reproduce it with:
-
 ```bash
 export MISTRAL_API_KEY=...
 uv run bluffhouse bench \
@@ -169,7 +167,53 @@ uv run bluffhouse bench \
   --hands 15 --rotations 5 --mode 6 --seed 42 --stack 5000
 ```
 
-Mistral's free tier allows 50 requests and 50000 tokens per minute. Mode-6 prompts are large enough that the token ceiling binds first, so keep `BLUFFHOUSE_MISTRAL_CONCURRENCY=2`; the run above took ~900 calls and returned 7 provider errors (0.8%). Push concurrency higher and 429s start landing, and a rate-limited agent silently falls back to a safe action — which looks exactly like bad play in the results.
+### Results: does model size fix it?
+
+The obvious follow-up is whether the shove-everything behaviour is a small-model artifact. Same seed, same mode, same stacks, with a size ladder from `mistral-large` down to `open-mistral-nemo`:
+
+```
+entrant                 adj chips  raw     poker  poker qual  belief acc  detection  info ctrl  cover  discipline
+----------------------  ---------  ------  -----  ----------  ----------  ---------  ---------  -----  ----------
+mistral-large-latest     +5775.0   +28875  100    100         76          100        88         25     75
+mistral-small-latest      +342.0    +1710  50     0           43          64         29         0      50
+open-mistral-nemo            +0.0       +0  46    33          70          52         100        75     100
+ministral-8b-latest      -1117.0    -5585  36     81          0           79         0          100    0
+mistral-medium-latest    -5000.0   -25000  0      80          100         0          50         100    50
+```
+
+**Half the answer is yes.** Games lasted 7, 15, 9, 15 and 10 hands (mean 11.2 against 6.6), two of them reaching the hand limit — the first games in any run here that ended on the clock rather than on a bust-out. And `adj chips` finally spreads instead of snapping to multiples of the table total, which is what the metric looks like when it is actually separating players.
+
+**The other half is no.** The action mix barely moved: **54% raises** against the small ladder's 55%. Scale did not make these models size their bets. What it changed is who survives the resulting variance — `mistral-large` posts a perfect poker score and top marks on detection while drawing the most heat at the table (`cover` 25), which is roughly what "wins the shove-fests and gets noticed doing it" looks like. Aggression here is invariant to scale; outcomes under aggression are not.
+
+Two caveats worth keeping. `mistral-medium` finishing last at a clean −25000 means it busted in all five rotations, so its position reflects early elimination rather than measured play. And with only five rotations on one seed, these standings carry no confidence intervals — use `--num-seeds` for anything load-bearing.
+
+```bash
+export BLUFFHOUSE_MISTRAL_LARGE_LATEST_RPM=3.5   # see rate limits below
+uv run bluffhouse bench \
+  --models mistral:mistral-large-latest,mistral:mistral-medium-latest,mistral:mistral-small-latest,mistral:ministral-8b-latest,mistral:open-mistral-nemo \
+  --hands 15 --rotations 5 --mode 6 --seed 42 --stack 5000
+```
+
+### Rate limits, and why they can quietly corrupt a benchmark
+
+An agent that hits a provider error falls back to a safe action and plays on. Nothing in the scorecard distinguishes that from a genuinely passive player, so a throttled model looks like a bad one. Keep the fault count near zero or the table is measuring your rate limits.
+
+Mistral's free tier publishes its ceilings **per model**, and they vary by an order of magnitude:
+
+| model | req/min | tokens/min |
+| --- | --- | --- |
+| `mistral-small-latest`, `ministral-*` | 50 | 50,000 |
+| `mistral-medium-latest` | 50 | 25,000 |
+| `magistral-medium-latest` | 5 | 75,000 |
+| `mistral-large-latest` | 4 | 250,000 |
+
+`BLUFFHOUSE_MISTRAL_CONCURRENCY=2` is right for the 50/min models: mode-6 prompts are large, so the token ceiling binds before the request ceiling. A semaphore cannot express a 4/min ceiling, though — concurrency 1 against `mistral-large` still fires roughly 20/min. Set `BLUFFHOUSE_<MODEL>_RPM` to pace a specific model instead:
+
+```bash
+export BLUFFHOUSE_MISTRAL_LARGE_LATEST_RPM=3.5
+```
+
+Budget for it. That ceiling is account-wide, so parallel rotations do not overlap it — every `mistral-large` call in the benchmark queues through one serial gate. The five-rotation run above took **2h20m for 1428 calls**, against roughly 20 minutes for the same shape on 50/min models. It returned 1 provider error.
 
 ## Set it up yourself
 

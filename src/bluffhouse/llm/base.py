@@ -12,6 +12,7 @@ from contextlib import contextmanager
 import os
 import re
 import threading
+import time
 
 from pydantic import BaseModel
 
@@ -76,9 +77,12 @@ _semaphores: dict[str, threading.Semaphore] = {}
 _semaphores_lock = threading.Lock()
 
 
+def _env_key(name: str) -> str:
+    return re.sub(r"[^A-Z0-9]+", "_", name.upper()).strip("_")
+
+
 def _provider_env_name(provider: str) -> str:
-    key = re.sub(r"[^A-Z0-9]+", "_", provider.upper()).strip("_")
-    return f"BLUFFHOUSE_{key}_CONCURRENCY"
+    return f"BLUFFHOUSE_{_env_key(provider)}_CONCURRENCY"
 
 
 def _provider_limit(provider: str) -> int:
@@ -92,12 +96,51 @@ def _provider_limit(provider: str) -> int:
         return 1
 
 
+_rate_gates: dict[str, tuple[threading.Lock, list[float]]] = {}
+_rate_gates_lock = threading.Lock()
+
+
+def _model_rpm(model: str) -> float:
+    """Requests-per-minute ceiling for one model, or 0 for unpaced.
+
+    Free tiers publish these per model, not per provider: on Mistral,
+    mistral-large allows 4/min while mistral-small allows 50. A semaphore
+    cannot express that — concurrency 1 against a 4/min ceiling still fires
+    roughly 20/min — so slow models need an explicit interval between calls.
+    """
+    raw = os.environ.get(f"BLUFFHOUSE_{_env_key(model)}_RPM", "0")
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return 0.0
+
+
 @contextmanager
-def provider_concurrency(provider: str) -> Iterator[None]:
-    """Limit concurrent live calls per provider across parallel rotations."""
+def _model_rate_gate(model: str) -> Iterator[None]:
+    """Hold back a call until the model's own rate budget allows it."""
+    rpm = _model_rpm(model)
+    if rpm <= 0:
+        yield
+        return
+    interval = 60.0 / rpm
+    with _rate_gates_lock:
+        lock, last = _rate_gates.setdefault(model, (threading.Lock(), [0.0]))
+    with lock:
+        wait = last[0] + interval - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        last[0] = time.monotonic()
+    yield
+
+
+@contextmanager
+def provider_concurrency(provider: str, model: str | None = None) -> Iterator[None]:
+    """Limit concurrent live calls per provider across parallel rotations,
+    and pace per model where a rate ceiling is configured."""
     limit = _provider_limit(provider)
     key = f"{provider}:{limit}"
     with _semaphores_lock:
         semaphore = _semaphores.setdefault(key, threading.Semaphore(limit))
     with semaphore:
-        yield
+        with _model_rate_gate(model or provider):
+            yield
