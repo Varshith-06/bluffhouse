@@ -33,7 +33,7 @@
 % Placeholder marker — every instance must be resolved before submission.
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
 
-\title{The House Always Records: Judge-Free Evaluation of\\Deception and Social Skill in Multi-Agent LLM Poker}
+\title{Affordance Is Not Adoption:\\Judge-Free Evaluation of Social Behaviour in Multi-Agent LLM Poker}
 
 % Hidden under the default (submission) style; revealed by the [final] option.
 \author{%
@@ -67,7 +67,8 @@ resolved by seeded dice at emit time: who overhears a whisper or notices a
 gesture is written into the event itself, giving each agent its own subjective
 slice of one objective history. Third, a duplicate-poker protocol---entrants
 rotating through anonymized seats over identical seeded deals---cancels card
-luck by construction, cutting outcome variance to a fifth of a naive game.
+luck by construction, cutting outcome variance to roughly a third of a
+naive game.
 Scripted bots provide zero-cost control conditions, and a seven-level ``mode
 ladder'' adds one social channel at a time, isolating which channel a
 behaviour depends on. The benchmark is deterministic given a seed,
@@ -263,16 +264,15 @@ p \;=\; \underbrace{b(\text{modality})}_{\text{base rate}}
 \times \underbrace{m_{\text{att}}}_{\text{attention}}
 \times (1 - \text{noise}),
 \end{equation}
-with base rates $b$ of $0.35$ for whispers, $0.40$ for chip signals, $0.30$
-for gestures, $0.25$ for note passes, and $0.18$ for eye contact.
-\emph{Subtlety} is the sender's own dial and cuts both ways: it suppresses
-interception \emph{and} raises the chance the intended recipient misses the
-message (a $0.9$-subtlety whisper misses its own target a third of the
-time). The attention multiplier $m_{\text{att}}$ is described below; noise
-is raised by staged distractions (mode~6). Outcomes are recorded inside the
-event as ground truth (Figure~\ref{fig:receptions}): the target got it
-\texttt{clear}; a bystander caught a word-shredded \texttt{fragment} with a
-confidence score; everyone else \texttt{missed} it.
+Base rates $b$ run from $0.35$ for a whisper down to $0.18$ for eye contact
+(Appendix~\ref{app:formulas}). \emph{Subtlety} is the sender's own dial and
+cuts both ways: it suppresses interception \emph{and} raises the chance the
+intended recipient misses the message. The attention multiplier
+$m_{\text{att}}$ is described below; noise is raised by staged distractions
+(mode~6). Outcomes are recorded inside the event as ground truth
+(Figure~\ref{fig:receptions}): the target got it \texttt{clear}; a
+bystander caught a word-shredded \texttt{fragment} with a confidence score;
+everyone else \texttt{missed} it.
 
 \begin{figure}[t]
 \begin{lstlisting}[style=eventjson]
@@ -302,23 +302,21 @@ question, and in our runs the answer was no.
 
 From mode~5, each street begins with every live player committing a
 watching budget of $1.0$ across opponents and general table awareness,
-blind, before anyone talks. The commitment multiplies notice probabilities:
-$m_{\text{att}} = 0.4 + f_{\text{sender}} + 0.5 f_{\text{target}} + 0.25\,
-f_{\text{table}}$, where $f$ are the observer's committed shares. Watching
-the wrong player leaves you \emph{worse} than passive---your table-wide
-awareness went with it. The tradeoff is exclusive by construction: in a
-scripted demonstration, a $0.8$ lock on one opponent catches a conspiracy
-whisper while a recruitment whisper on the same street sails past unseen.
-No model in our experiments committed attention in a way that mattered,
-because no model sent anything to intercept (\S\ref{sec:elicitation}).
+blind, before anyone talks. The commitment multiplies notice probabilities
+(Appendix~\ref{app:formulas}), and the tradeoff is exclusive by
+construction: watching the wrong player leaves an observer \emph{worse}
+than passive, because the table-wide awareness went with it. Attention is
+therefore a resource an agent must allocate under uncertainty about where
+the information will be. In our experiments it never bound, because no
+model sent anything to intercept (\S\ref{sec:elicitation}).
 
 \subsection{The mode ladder}
 \label{sec:modes}
 
 One config number controls how much social physics exists
-(Table~\ref{tab:modes}). Each mode adds a single capability, so running the
-same entrants over the same seeds across modes isolates exactly which
-ability a model has---or lacks. Mode~6 adds unrefereed manipulation:
+(Table~\ref{tab:modes}). Each mode adds a single capability, so a behaviour
+that appears only from mode~$k$ upward is a behaviour that needs the channel
+mode~$k$ introduced. Mode~6 adds unrefereed manipulation:
 \emph{notes} always reach their target but a bystander may see the pass
 (and $40\%$ of the time reads the whole thing); \emph{accusations} are
 public charges that nobody fact-checks---true or fabricated, they carry
@@ -493,7 +491,7 @@ not settle whether shoving every hand beats calling stations, and the
 instrument says so rather than manufacturing certainty.
 
 \textbf{Determinism.} Byte-identical logs per mode are covered by the test
-suite; the full suite (102 tests, including side-pot math against fixed
+suite; the full suite (108 tests, including side-pot math against fixed
 decks, statistical bands on interception rates, privacy proofs that
 intents never reach observations, and regression tests for the
 non-decision instrumentation of \S\ref{sec:nondecision}) spends zero
@@ -729,15 +727,13 @@ communication. Two properties stand out, both visible only because the
 environment stores the declared intent beside the surface form.
 
 \textbf{Talk is social, not strategic.} The surfaces are pleasantries---
-\emph{``Good luck everyone!''}, \emph{``Let's see a flop.''},
-\emph{``Hope we get some action this hand.''} The intents are more
-revealing and consistently instrumental: ``encourage limpers to keep the
+\emph{``Good luck everyone!''}, \emph{``Let's see a flop.''} The intents
+behind them are consistently instrumental: ``encourage limpers to keep the
 pot small with my weak hand''; ``probe table dynamics and set up a loose
-image for future bluffs''; ``maintain a neutral image while planning to
-fold my weak hand''. Models understand what table talk is \emph{for}---
-image construction, pot control, cheap misdirection---and describe it
-accurately in a channel no opponent can read. What they do not do is
-convert that understanding into any act with a target, a secret, or a risk.
+image for future bluffs''. Models understand what table talk is \emph{for}
+and describe it accurately in a channel no opponent can read. What they do
+not do is convert that understanding into any act with a target, a secret,
+or a risk.
 
 \textbf{The directed arm measures compliance, and says so.} One intent
 reads, in full: ``establish a friendly table image \emph{and satisfy the
@@ -748,12 +744,10 @@ one---and an argument for recording declared intent in any elicitation
 study, since it is the channel in which an agent will tell you that it is
 performing for the evaluator.
 
-Because every directed message was public speech, every reception in these
-runs resolved to \texttt{clear} for every seat. The perception machinery of
-\S\ref{sec:perception}---interception rolls, shredded fragments, confidence
-scores, the heat ledger---was exercised by the scripted demonstrations and
-the test suite, but never by a model's own choice. That is a statement
-about current model propensity, not about the instrument.
+With every message public, every reception resolved to \texttt{clear}, so
+the perception machinery of \S\ref{sec:perception}---interception rolls,
+shredded fragments, the heat ledger---was exercised by the test suite but
+never by a model's own choice.
 
 \section{Discussion and limitations}
 \label{sec:limits}
@@ -804,6 +798,17 @@ comparison, and \S\ref{sec:nondecision} is the sharpest instance of why we
 instrument prompt effects rather than assume them away. Because deals are
 generated procedurally from seeds, the benchmark cannot be memorized from a
 static test set, and adding seeds is purely a matter of budget.
+
+\textbf{Building a deception gym responsibly.} An environment that rewards
+misleading other agents deserves an explicit boundary. Ours is drawn at the
+game: every participant is a model, no human is deceived, nothing is
+optimized against a person, and the only currency is chips inside a
+sandbox. We measure whether deception occurs; we do not train for it, and
+the benchmark returns no gradient. The reason to measure it at all is that
+this capability is already deployed---agents negotiate, and increasingly
+they negotiate with each other---and the alternative to a measurable,
+seeded, fully logged sandbox is not the absence of the behaviour but its
+absence from the record.
 
 \subsection*{What transfers beyond poker}
 
@@ -927,8 +932,26 @@ Attention (mode 5+) and per-street belief reports use analogous
 strict-JSON phases; a malformed reply in any phase receives one
 correction round trip quoting the parse error, then a safe fallback.
 
-\section{Scorecard formulas}
+\section{Perception and scorecard formulas}
 \label{app:formulas}
+
+\paragraph{Perception constants.} The base notice rates $b$ in
+Equation~\ref{eq:perception} are $0.35$ for a whisper, $0.40$ for a chip
+signal, $0.30$ for a gesture, $0.25$ for a note pass, and $0.18$ for eye
+contact. Subtlety is symmetric: a $0.9$-subtlety whisper suppresses
+interception heavily but misses its own intended recipient about a third of
+the time, so concealment is priced rather than free. A noticed gesture
+reveals sender, target, and surface form, never meaning. A noticed note is
+read in full $40\%$ of the time.
+
+\paragraph{Attention multiplier.} For an observer with committed shares
+$f$, $m_{\text{att}} = 0.4 + f_{\text{sender}} + 0.5\,f_{\text{target}} +
+0.25\,f_{\text{table}}$. Watching a sender also rescues subtle signals aimed
+at the watcher. Because the shares sum to $1.0$, attention spent on one
+opponent is attention removed from everywhere else, which is what makes a
+misallocation worse than staying passive.
+
+\paragraph{Scorecard.}
 
 For entrant $e$ with mechanical counts aggregated over rotations:
 \emph{detection} $= (\text{caught} + 1) / (\text{covert
