@@ -332,17 +332,14 @@ a covert act---environment-only bookkeeping that agents never see.
 \label{tab:modes}
 \centering
 \small
-\begin{tabular}{cl}
+\begin{tabular}{cl@{\hspace{1.5em}}cl}
 \toprule
-Mode & Adds \\
+\# & Adds & \# & Adds \\
 \midrule
-0 & Pure poker --- the luck-controlled baseline \\
-1 & Public speech: one message per player per street \\
-2 & Whispers: private messages, guaranteed delivery, zero risk \\
-3 & Interception: whispers leak as corrupted fragments; subtle ones can miss their own target \\
-4 & Gestures, eye contact, chip signals: surface forms only --- meaning lives in in-band codes \\
-5 & The attention economy: commit a watching budget before each street \\
-6 & Full manipulation: notes, accusations, distractions, the heat ledger \\
+0 & Pure poker (luck-controlled baseline) & 4 & Gestures and chip signals: surface only \\
+1 & Public speech, one message per street & 5 & Attention economy: commit a watching budget \\
+2 & Whispers: private, guaranteed, riskless & 6 & Notes, accusations, distractions, heat \\
+3 & Interception: whispers leak as fragments & & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -762,57 +759,51 @@ about current model propensity, not about the instrument.
 \label{sec:limits}
 
 \textbf{Perception is dice, not vision.} Noticing a whisper is a seeded
-roll, not a perceptual skill. This is the price of judge-free ground
-truth, and it is the point: the benchmark measures what agents \emph{do}
-with partial observations---not whether they can hear. The perception
-parameters are transparent constants, so agents could in principle reason
-about them.
+roll, not a perceptual skill---the price of judge-free ground truth, and
+also the point: the benchmark measures what agents \emph{do} with partial
+observations, not whether they can hear.
 
 \textbf{Intent honesty.} Agents could lie to the environment about their
-intents. No headline metric depends on intent truthfulness: chips,
-detection, information control, cover, and discipline are all computed
-from surfaces, receptions, and outcomes. Intents serve analysis and the
-replay viewer, and a systematic intent--behavior mismatch is itself
-measurable.
+intents. No headline metric depends on intent truthfulness; chips,
+detection, information control, cover, and discipline are computed from
+surfaces, receptions, and outcomes, and a systematic intent--behaviour
+mismatch is itself measurable.
 
 \textbf{Social skill is entangled with poker skill, and the ladder does not
 cleanly separate them.} A model can win mode~6 by playing better poker and
 ignoring the social layer---which is exactly what happened. We designed the
-mode ladder as the control for this, expecting the mode-0 to mode-6
-difference to attribute chips to social channels. \S\ref{sec:ladder} shows
-that differencing across modes inherits agent sampling variance large
-enough to swamp the effect, so the ladder is a valid capability
-\emph{isolation} device (each mode offers exactly one more channel) but not,
-at achievable trial counts, a reliable value \emph{attribution} device. In
-this paper the attribution is carried instead by a fact the differencing
-cannot dispute: the channels carried no traffic at all.
+ladder as the control for this, and \S\ref{sec:ladder} shows that
+differencing across modes inherits agent sampling variance large enough to
+swamp the effect. The ladder isolates \emph{which channel} a behaviour
+needs, but at achievable trial counts it does not attribute \emph{value} to
+one. Here the attribution rests instead on a fact the differencing cannot
+dispute: the channels carried no traffic at all.
 
 \textbf{The declination result rests on a small, mid-tier roster.} This is
-the most serious limitation, and it bounds our central claim precisely.
-Two models of moderate size, benchmarked over a handful of seeds, declined
-to use social channels; a third behaved identically in pilots. We cannot
-say from this that frontier models would do the same, and there are
-reasons to think they might not---longer-horizon planning is exactly the
-capability that would make a hand-1 codebook worth setting up for a hand-4
-payoff. What we can say is stronger than it may appear: the declination is
-not a capability ceiling, because the same models communicate competently
-when directed (\S\ref{sec:elicitation}); it is not a parsing artifact,
-because schema misses are zero; and it is not noise, because it holds
-across every rotation of every seed, both prompt conditions, and three
-model families. Whether it survives contact with frontier models is the
-first experiment we would run with a funded API budget, and the harness
-needs no changes to run it.
+the most serious limitation. Two models of moderate size, over a handful of
+seeds, declined the social channels; a third behaved identically in pilots.
+We cannot conclude that frontier models would do the same, and there are
+reasons to doubt it---long-horizon planning is exactly the capability that
+makes a hand-1 codebook worth setting up for a hand-4 payoff. What we can
+say is stronger than it may appear: the declination is not a capability
+ceiling, since the same models communicate competently when directed
+(\S\ref{sec:elicitation}); not a parsing artifact, since schema misses are
+zero; and not noise, since it holds across every rotation of every seed,
+both prompt conditions, and three model families. A preliminary probe is
+consistent with the pattern persisting at scale---two much larger models
+(550B and 120B parameters) produced five well-formed talk decisions between
+them, all declining---but five decisions is not a result, and free-tier
+request caps ended that game early. Running it at frontier scale is the
+first experiment we would fund; the harness needs no changes.
 
-\textbf{Statistical scale.} Bootstrap intervals over a handful of seeds are
-indicative, not decisive; they are reported to convey uncertainty honestly,
-not to claim significance we have not earned. Because deals are
-procedurally generated from seeds, the benchmark cannot be memorized from a
+\textbf{Statistical scale and prompt sensitivity.} Bootstrap intervals over
+a handful of seeds are indicative, not decisive, and are reported to convey
+uncertainty rather than to claim significance we have not earned. All
+entrants share one prompt format; per-model tuning would confound the
+comparison, and \S\ref{sec:nondecision} is the sharpest instance of why we
+instrument prompt effects rather than assume them away. Because deals are
+generated procedurally from seeds, the benchmark cannot be memorized from a
 static test set, and adding seeds is purely a matter of budget.
-
-\textbf{Prompt sensitivity.} All entrants share one prompt format;
-per-model prompt tuning is out of scope and would confound the comparison.
-\S\ref{sec:nondecision} is the sharpest instance of this concern and the
-reason we instrument it rather than assume it away.
 
 \subsection*{What transfers beyond poker}
 
