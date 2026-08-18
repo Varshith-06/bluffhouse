@@ -29,6 +29,28 @@ def test_unknown_preset_rejected():
         OpenAICompatClient("m", preset="nonsense")
 
 
+def test_empty_choices_raises_llmerror_not_typeerror(monkeypatch):
+    """Aggregators can answer 200 with choices=null when an upstream provider
+    fails. That must become LLMError (agent falls back to a safe action), not
+    an exception that takes the whole game down."""
+    from bluffhouse.llm import LLMRequest
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    client = OpenAICompatClient("vendor/model:free", preset="openrouter")
+
+    class _Response:
+        choices = None
+        usage = None
+        error = {"message": "upstream rate-limited"}
+
+    monkeypatch.setattr(
+        client._client.chat.completions, "create", lambda **kw: _Response()
+    )
+    request = LLMRequest(system="s", messages=[{"role": "user", "content": "u"}])
+    with pytest.raises(LLMError, match="upstream rate-limited"):
+        client.complete(request)
+
+
 def test_cli_seat_spec_keeps_slashes_in_model(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     from bluffhouse.agents import LLMAgent

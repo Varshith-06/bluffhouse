@@ -70,7 +70,15 @@ class OpenAICompatClient(LLMClient):
             raise LLMError(f"openai-compat ({self.model}): {exc}") from exc
         latency = time.monotonic() - start
 
-        text = response.choices[0].message.content or ""
+        # Aggregators (OpenRouter) can return 200 with choices null when an
+        # upstream provider fails. Surface it as LLMError so the agent takes
+        # its safe fallback instead of crashing the game.
+        choices = response.choices or []
+        if not choices:
+            detail = getattr(response, "error", None) or "no choices in response"
+            raise LLMError(f"openai-compat ({self.model}): {detail}")
+
+        text = choices[0].message.content or ""
         usage = response.usage
         return LLMResponse(
             text=text,

@@ -1,7 +1,11 @@
 \documentclass{article}
 
-% Submission mode: anonymized, with line numbers (default for neurips_2026).
-\usepackage{neurips_2026}
+% SUBMISSION (double-blind workshop): keep as-is. `dblblindworkshop` keeps the
+% author block anonymous and stamps the workshop name in the footer; the names
+% in \author below never reach the PDF.
+% CAMERA-READY: build with `python paper/build.py --final`, which adds [final].
+\usepackage[dblblindworkshop]{neurips_2026}
+\workshoptitle{Evaluation of Interactive Agents}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -31,10 +35,18 @@
 
 \title{The House Always Records: Judge-Free Evaluation of\\Deception and Social Skill in Multi-Agent LLM Poker}
 
+% Hidden under the default (submission) style; revealed by the [final] option.
 \author{%
-  Anonymous Author(s)\\
-  Anonymous Affiliation\\
-  \texttt{anonymous@example.com}
+  Sai Varshith Paluru\thanks{All benchmarks, experiments, and analysis were
+  conducted by S.V.P. H.C. contributed to the design and implementation of
+  the \textsc{BluffHouse} framework.} \\
+  Mathematics and Scientific Computing\\
+  ABV-IIITM Gwalior\\
+  \texttt{saivarshith2006@gmail.com} \\
+  \And
+  Hemesh Chadalavada \\
+  Computer Engineering\\
+  Rice University \\
 }
 
 \begin{document}
