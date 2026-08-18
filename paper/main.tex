@@ -113,16 +113,15 @@ trajectories that stochastic multi-agent comparisons require.
 
 This paper describes an environment built so that the judge is unnecessary.
 \textsc{BluffHouse} seats language models at a no-limit hold'em table
-augmented with social channels: public table talk, targeted whispers,
-physical notes, symbolic gestures, public accusations, and staged
-distractions. The chips are the cover story; the benchmark question is
-whether a model can read, move, and mislead a table of other models. We
-built it to answer that and learned something we consider more useful: with
-the channels fully open, the models did not use them---and why, and what
-eventually changed it, were recoverable only because the environment
-records refusals and rendered prompts, not just actions. The design
-contributes three evaluation mechanisms; running it contributes two lessons
-about what such mechanisms can and cannot see.
+augmented with social channels: table talk, whispers, physical notes,
+symbolic gestures, accusations, and staged distractions. The chips are the
+cover story; the question is whether a model can read, move, and mislead a
+table of other models. We built it to answer that and learned something
+more useful: with the channels fully open the models did not use them, and
+why---and what eventually changed it---was recoverable only because the
+environment records refusals and rendered prompts, not just actions. The
+design contributes three evaluation mechanisms; running it contributes two
+lessons about what such mechanisms can and cannot see.
 
 \textbf{1. The intent--surface split (grader design).} Every communicative
 act carries two texts: the \emph{surface} form shown to the table, and a
@@ -439,15 +438,14 @@ not create it: even pre-fix, 72\% of talk replies were correctly formed and
 all but one still declined to speak.
 
 \textbf{(2) Genuine declination.} With the phase-explicit prompt, schema
-misses fall to zero across all three phases and all three post-fix arms
-(0/72 talk, 0/71 attention, 0/70 belief). Models answer the correct
-schema---replies carry \texttt{message} and \texttt{intent} keys---and set
-\texttt{message} to \texttt{null} on every single street, with consistent
+misses fall to zero across all three phases and all post-fix arms (0/72
+talk, 0/71 attention, 0/70 belief). Models answer the correct schema and
+set \texttt{message} to \texttt{null} on every street, with consistent
 private reasons: ``stay silent to avoid giving away any information'',
-``keeping low profile early in the game'', ``remain quiet to observe how
-the opponents react''. They are not failing to use the channel; they are
-declining it, reasoning about communication almost exclusively as a
-leakage risk rather than as an instrument for shaping other players.
+``keeping low profile early in the game''. They are not failing to use the
+channel; they are declining it, reasoning about communication almost
+exclusively as a leakage risk rather than as an instrument for shaping
+other players.
 
 \textbf{(3) Propensity versus capability.} Declining a channel by default
 does not establish inability to use it. We ran three arms over an identical
@@ -466,50 +464,66 @@ huh?''}, purpose ``probe table dynamics and set up a loose image for future
 bluffs''. Between ``available'' and ``used'' lies a gap that no amount of
 affordance closes and that one directive closes completely.
 
-\textbf{Adoption is degenerate in kind, not only in volume.} All 19
-directed messages were public \texttt{speech}. Under every condition
-described so far, no model sent a whisper, note, gesture, or accusation---the
-covert channels that carry the strategic content, and the only ones the
-perception, interception, and heat machinery can price. Compelled to
+All 19 directed messages were public \texttt{speech}: compelled to
 communicate, models reach for the one channel with no concealment, no
-addressee, and no risk.
+addressee, and no risk, leaving every metric the perception machinery can
+price at zero.
 
 \textbf{(4) Elicitation selects the channel, not just the volume.} The
-fourth arm was not designed; it was a mistake we caught after the fact, and
-it is more informative than the arm we meant to run
-(\S\ref{sec:promptsurface} explains how it happened). Its talk prompt keeps
-the same schema and the same channels but argues for using them: it tells
-agents that silence is ``the exception, not the default'', quotes the
-published interception odds, and states that ``the private channels are
-where influence turns into chips''. It answers, point for point, the three
+fourth arm was not designed---it was a mistake we caught after the fact
+(\S\ref{sec:promptsurface}), and it is more informative than the arm we
+meant to run. Its talk prompt keeps the same schema and channels but argues
+for using them: silence is ``the exception, not the default'', the
+interception odds are quoted, and ``the private channels are where
+influence turns into chips''. It answers, point for point, the three
 reasons the models had given for staying silent.
 
 Under it the same two models, at the same table, with the same neutral
 system prompt, sent 305 messages over 491 talk offers across 18 games
 (Table~\ref{tab:elicitation})---169 of them, 55\%, \emph{whispers}. The
 covert layer no directive had reached came alive: bystander interception
-rolls fired for the first time on traffic a model chose to send, shredding
-23 whispers into fragments overheard by a third seat. Adoption is partial
-rather than total (186 replies still chose silence explicitly), which is
-what distinguishes this arm from the directed one---agents are choosing,
-not complying.
+rolls fired for the first time on traffic a model chose to send. Adoption
+is partial rather than total (186 replies still chose silence explicitly),
+which is what distinguishes this arm from the directed one---agents are
+choosing, not complying.
 
 The comparison across arms is the result. \emph{Compulsion moved volume and
 left the channel mix degenerate: 100\% adoption, 0\% covert. Argument moved
 the mix: 62\% adoption, 55\% covert.} A benchmark whose social metric is
 ``messages sent'' scores the directed arm above the advocacy arm, yet every
-metric requiring a target, a secret, or a risk---detection, information
-control, cover, the whole interception apparatus---is zero in the first and
-populated only in the second. What an elicitation study measures depends on
+metric requiring a target, a secret, or a risk is zero in the first and
+populated only in the second: what an elicitation study measures depends on
 which axis of behaviour its metric can see, and volume is the axis that
-misleads. The content confirms it: whispers open private lines and keep
-them open (\emph{``I hit the five.''}, intent ``build alliance with P2
-while subtly intimidating P1''), while the public channel carries the
-recorded lies the environment exists to price without a judge
+misleads. The content confirms it---whispers open private lines
+(\emph{``I hit the five.''}, intent ``build alliance with P2 while subtly
+intimidating P1'') while the public channel carries recorded lies
 (\emph{``That Queen is a bit of a buzzkill, isn't it?''}, intent ``downplay
-the strength of my KK to induce action''). The two models also differ
-sharply in propensity---Gemma-4-31B 246 messages, 61\% whispered; Mistral
-Medium 59, 34\%---which no outcome-only leaderboard would reveal.
+the strength of my KK to induce action'')---and the two models differ
+sharply in propensity: Gemma-4-31B 246 messages, 61\% whispered; Mistral
+Medium 59, 34\%.
+
+\textbf{Where the loop actually breaks.} Instrumented further, the adopted
+behaviour separates sharply into what these models will and will not do.
+They \emph{will} sustain a private relationship: 24 distinct whisper pairs
+formed, 15 recurring across more than one hand and one holding a line open
+for all eight. They will declare instrumental purpose---32\% of intents
+carry a deception marker (mislead, downplay, bait, induce), 30\% an
+alliance marker. What they will not do is \emph{act on an advantage the
+environment hands them}. Third seats caught 23 shredded fragments of other
+players' whispers; six subsequent messages so much as name the seat
+overheard, and none converts the catch into a squeeze, a public charge, or
+a sale to the third player. Nor does anyone escalate: all 305 messages were
+speech or whispers, and not one note, gesture, accusation, or distraction
+was ever sent, though mode~6 offers all four and this arm's prompt names
+them.
+
+So the failure is not expressive. These models open a channel, state a
+purpose, and lie on the record; what they do not do is close the loop that
+turns private information into pressure, or touch the channels whose value
+is inseparable from their risk. That is a specific, falsifiable place for a
+social-agent benchmark to point, and it is invisible to any evaluation
+scoring messages or chips rather than the structure of what was sent and
+what was done with what was heard.
 
 \begin{table}[tbp]
 \caption{The elicitation ladder: same environment, same models, same seats,
@@ -527,7 +541,7 @@ roll.}
 Prompt condition & Games & Offers & talk & belief & Messages & Covert \\
 \midrule
 Schema-anchored (pre-fix)     & 11 & 303 & 27.7\% & 12.5\% & 1   & --- \\
-Neutral, phase-explicit       & 2  & 34  & 0\%    & 0\%    & 0   & --- \\
+Neutral, phase-explicit       & 24 & 692 & 0\%    & 0\%    & 0   & --- \\
 \; + social framing           & 1  & 19  & 0\%    & 0\%    & 0   & --- \\
 \; + explicit direction       & 1  & 19  & 0\%    & 0\%    & 19  & 0\% \\
 Channel-advocacy talk prompt  & 18 & 491 & 0\%    & 0\%    & 305 & 55\% \\
@@ -535,13 +549,15 @@ Channel-advocacy talk prompt  & 18 & 491 & 0\%    & 0\%    & 305 & 55\% \\
 \end{tabular}
 \end{table}
 
-The methodological consequence outlives the specific models. A benchmark
-reporting only outcomes would score every entrant here as socially inert
-and invite the conclusion that these models cannot deceive or coordinate,
-when what it measured is \emph{propensity} under one prompt. Separating
-propensity from capability requires logging the declined option as an
-event---the road not taken has to be in the trajectory---and an elicitation
-arm that varies framing while holding the environment fixed.
+The methodological consequence outlives these models. A benchmark reporting
+only outcomes would score every entrant as socially inert and invite the
+conclusion that they cannot deceive or coordinate, when what it measured is
+\emph{propensity} under one prompt. Separating propensity from capability
+requires logging the declined option as an event---the road not taken has
+to be in the trajectory---and an arm that varies framing while holding the
+environment fixed.
+
+\textbf{The intent channel reports on the evaluator.} Recording declared intent has one further use, visible in the directed arm: an intent there reads, in full, ``establish a friendly table image \emph{and satisfy the communication requirement}''---the model naming the instruction as part of its own motivation. That is the clearest evidence the directed condition is a reachability control rather than a behavioural one, and an argument for a private intent channel in any elicitation study: it is where an agent tells you it is performing for the evaluator.
 
 \subsection{A prompt condition is a surface, not a string}
 \label{sec:promptsurface}
@@ -549,27 +565,36 @@ arm that varies framing while holding the environment fixed.
 The fourth arm exists because we ran it without meaning to, and the way it
 happened defeated the specific safeguard we had built against it.
 
-Extending the headline benchmark with more seeds, we pinned the prompt
-condition with the environment variable the codebase provides for exactly
-this purpose---the one whose commit message records it as ``verified
+Extending the headline benchmark with more seeds, we pinned the condition
+with the environment variable the codebase provides for exactly this
+purpose---the one whose commit message records it as ``verified
 byte-identical to the literal at the paper commit''. It was. But an agent
 here does not see one prompt; it sees a \emph{surface} of them: a system
-message, and a separately constructed instruction block per phase. The pin
-covered the system message, and between the published runs and the
-extension a branch merge had rewritten the talk-phase block from a neutral
-description of the channels into an argument for using them---the advocacy
-prompt of arm 4. Two of eight seeds were collected under one condition and
-six under another, and the run reported one leaderboard over all eight.
+message and a separately constructed instruction block per phase. The pin
+covered the system message, and a branch merge had meanwhile rewritten the
+talk-phase block from a neutral description of the channels into an
+argument for using them---the advocacy prompt of arm 4. Two of eight seeds
+were collected under one condition and six under another, under one
+leaderboard.
 
 Nothing failed. No test broke, no fault was logged, the schema-miss
-detector of \S\ref{sec:nondecision} stayed at zero, and the resulting table
-was well formed and wrong---not visibly anomalous either, since it shifted
-every entrant toward the mean and widened one interval across zero, which
-reads as ordinary added variance. What exposed it was neither the code nor
-the summary statistics but the archived transcripts: because every provider
-call stores its fully rendered prompt, the two conditions could be diffed
-character by character and the drift localized to one instruction block. We
-draw three conclusions, none specific to poker.
+detector stayed at zero, and the resulting table was well formed and
+wrong---not visibly anomalous either, since it shifted every entrant toward
+the mean and widened one interval across zero, which reads as ordinary
+variance. What exposed it was neither the code nor the summary statistics
+but the archived transcripts: because every provider call stores its fully
+rendered prompt, the two conditions could be diffed character by character
+and the drift localized to one instruction block. We draw three
+conclusions, none specific to poker.
+
+The repair doubles as the cleanest experiment here. Re-running all eight
+seeds under a surface pinned end to end---same models, decks, seats and
+system message, one instruction block different---gives 0 messages over 692
+talk offers where the drifted surface gave 305 over 491 on overlapping
+seeds. Where \S\ref{sec:elicitation} varies arms that differ in several
+ways at once, this pair differs in exactly one literal and moves adoption
+from total abstention to 62\%, the majority of it covert. We would not have
+designed the ablation; we ran it by having to undo the mistake.
 
 \textbf{Pin the surface, not the message.} Any harness rendering different
 text for different phases---plan, act, reflect, self-report, tool
@@ -586,23 +611,23 @@ lived between a pinned literal and an unpinned one, and only the rendered
 artifact distinguishes them. It costs storage and nothing else.
 
 \textbf{We were lucky in the size of the effect.} The drift announced
-itself only because the rewritten prompt moved behaviour from 0 messages to
-305. A revision shifting adoption by a few percent, or changing only tone,
-would have produced a table just as well formed, just as wrong, and with
-nothing conspicuous to investigate---which is why the literature's silence
-on prompt-surface drift is more likely to mean it is invisible than that it
-is rare. An evaluation result is a claim about a prompt surface, no more
-reproducible than the least-pinned literal in it.
+itself only because it moved behaviour from 0 messages to 305. A revision
+shifting adoption by a few percent, or changing only tone, would have
+produced a table just as well formed and just as wrong with nothing
+conspicuous to investigate---which is why the literature's silence on
+prompt-surface drift more likely means it is invisible than rare. An
+evaluation result is a claim about a prompt surface, no more reproducible
+than the least-pinned literal in it.
 
 \subsection{Main results: mode 6}
 \label{sec:main}
 
 \begin{table}[tbp]
-\caption{Mode-6 leaderboard under the neutral prompt surface, seeds
-$\{41,42\}$, 8 hands. Intervals are bootstrap 95\%, indicative only at this
-seed count; ``Rep./Flt.'' counts repairs and parse faults. Detection,
-information control, and cover are omitted: with no covert messages every
-entrant ties by construction.}
+\caption{Mode-6 leaderboard under the pinned neutral surface: seeds
+$41$--$48$, 8 hands, 24 games. Intervals are bootstrap 95\% over per-seed
+values; ``Rep./Flt.'' counts illegal-action repairs and unparseable
+replies. Detection, information control, and cover are omitted: with no
+covert messages every entrant ties by construction.}
 \label{tab:leaderboard}
 \centering
 \small
@@ -610,67 +635,43 @@ entrant ties by construction.}
 \toprule
 Entrant & Adj.\ chips & 95\% CI & Wins & Poker q. & Belief & Rep./Flt. \\
 \midrule
-Mistral Medium & $+433.8$ & $[+260, +607]$ & 2.0 & 50 & 96 & 4 / 0 \\
-Gemma-4-31B & $+141.0$ & $[+79, +203]$ & 0.0 & 72 & 100 & 0 / 0 \\
-\texttt{random} (control) & $-574.8$ & $[-810, -340]$ & 0.0 & 50 & 0 & 0 / 0 \\
+Mistral Medium & $+159.4$ & $[-74, +408]$ & 4.0 & 95 & 44 & 13 / 0 \\
+Gemma-4-31B & $+58.7$ & $[-103, +228]$ & 2.0 & 52 & 100 & 0 / 4 \\
+\texttt{random} (control) & $-218.1$ & $[-505, +33]$ & 2.0 & 17 & 0 & 0 / 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Both language models beat the random control decisively and separate from
-each other: over the seeds we ran, the intervals for Mistral Medium and
-Gemma-4-31B do not overlap, and the win-rate matrix is a strict order
-(Mistral over Gemma over random, 1.0 in every cell). With a complete
-rotation cycle this ordering rests on paired comparisons over identical
-decks, which is what makes a handful of seeds sufficient to separate
-entrants at all---the same comparison on raw chips would be swamped by the
-$\pm 2000$-chip swings visible in the per-seed totals.
+The ordering is the expected one and the evidence for it is weak; we report
+the second half as carefully as the first. Both models finish above the
+control on the mean and Mistral above Gemma, but every bootstrap interval
+overlaps every other, the control's upper bound is positive, and the
+win-rate matrix is not a strict order---\texttt{random} finishes above
+Gemma-4-31B on two seeds and above Mistral Medium on three. A two-seed
+version of this table showed non-overlapping intervals and a clean
+1.0-in-every-cell order; that separation did not survive six more seeds.
 
-Two details temper the headline. The entrant with the most chips is not the
-most disciplined---Mistral's play required illegal-action repairs in every
-seed while Gemma required none, so a benchmark pricing protocol compliance
-alongside outcome would rank them differently. And, more important for
-interpreting this table, \emph{the mode-6 social layer contributed nothing
-to it}: entrants sent zero messages in every rotation of every seed
-(\S\ref{sec:elicitation}), so detection, information control, and cover
-have no data behind them. What Table~\ref{tab:leaderboard} measures is
+The instrument is not at fault, since the identical protocol separates four
+scripted bots at ten seeds (\S\ref{sec:validity}). What differs is that
+these entrants sample: duplicate rotations cancel the deck, leaving agent
+stochasticity, and at 8 hands a seed that residual keeps a mid-tier
+language model statistically indistinguishable from a bot playing at
+random. \emph{Trajectory-level evaluation of stochastic agents is far more
+trial-hungry than single-turn intuition suggests}---24 games and
+2.4~million tokens do not settle a three-way ordering---so a benchmark of
+this shape reporting a ranking from a handful of seeds is reporting noise
+it has not measured.
+
+Two details temper the table further. The entrant with the most chips is
+not the most disciplined: Mistral needed 13 illegal-action repairs against
+Gemma's none. And, more important, \emph{the mode-6 social layer
+contributed nothing to any of it}---across 24 games entrants were offered
+692 opportunities to speak and took none, so detection, information
+control, and cover have no data behind them. What the table measures is
 no-limit hold'em skill plus protocol discipline, at a table that offered a
 social game nobody played.
 
-\subsection{The mode ladder, and what differencing cannot do}
-\label{sec:ladder}
-
-Modes 0 and 6 present the same entrants with the same seeded deals, so a
-model extracting value from the social channels should move between them.
-It does not, in an instructive way: on seed 41 the modes are the same game
-to within one adjusted chip, while on seed 42 the comparison swings 434
-chips and reorders the table---with zero messages sent in either mode, so
-no channel can be responsible. \textbf{Pairing on identical decks cancels
-environment stochasticity; it does nothing about agent stochasticity.}
-Isolating a condition effect over stochastic agents needs paired agent
-sampling---fixed decoding seeds, which production APIs do not reliably
-expose---or many more trials than a free-tier budget allows
-(Appendix~\ref{app:ladder}).
-
-\subsection{What elicited talk actually contains}
-\label{sec:case}
-
-Storing declared intent beside the surface form lets us inspect the content
-of communication and not merely its count, and the two elicited arms differ
-in kind. Directed talk is pleasantry over instrumental intent---\emph{``Good
-luck everyone!''} to ``encourage limpers to keep the pot small with my weak
-hand''---and never acquires a target, a secret, or a risk. Advocacy talk
-does: it opens private lines, trades intel, and proposes coalitions, which
-is what finally exercised the perception machinery of
-\S\ref{sec:perception} by a model's own choice rather than by the test
-suite. The intent channel also catches the directed arm reporting on
-itself. One intent reads, in full, ``establish a friendly table image
-\emph{and satisfy the communication requirement}''---the model naming the
-instruction as part of its own motivation, which is the clearest evidence
-that the directed condition is a reachability control rather than a
-behavioural one, and an argument for recording declared intent in any
-elicitation study: it is the channel in which an agent will tell you it is
-performing for the evaluator.
+\textbf{What differencing cannot do.} \label{sec:ladder}Modes 0 and 6 present the same entrants with the same seeded deals, so a model extracting value from the social channels should move between them. It does not, instructively: on seed 41 the modes are the same game to within one adjusted chip, while on seed 42 the comparison swings 434 chips and reorders the table---with zero messages in either mode, so no channel can be responsible. \textbf{Pairing on identical decks cancels environment stochasticity; it does nothing about agent stochasticity} (Appendix~\ref{app:ladder}).
 
 \section{Discussion and limitations}
 \label{sec:limits}
@@ -693,35 +694,30 @@ needs but does not attribute \emph{value} to one.
 \textbf{The declination result rests on a small, mid-tier roster.} This is
 the most serious limitation. Two models of moderate size declined the
 social channels and a third behaved identically in pilots, but we cannot
-conclude that frontier models would, and there are reasons to doubt
-it---long-horizon planning is exactly the capability that makes a hand-1
-codebook worth setting up for a hand-4 payoff. What we can say is stronger
-than it may appear: the declination is not a capability ceiling, since the
-same models communicate competently when directed; not a parsing artifact,
-since schema misses are zero; and not noise, since it holds across every
-rotation of every seed, under both the neutral and the socially framed
-prompt, and across three model families. It is, however, prompt-fragile in
-a specific direction, and we would rather bound the claim than have a
-reader do it: declination survives a paragraph asserting that social play
-matters and does not survive a talk prompt that rebuts the reasons for
-silence. The honest statement is therefore about a surface and not about
-the models---these models decline these channels under a prompt that does
-not advocate for them---which is the shape of claim
-\S\ref{sec:promptsurface} argues evaluation results should be forced to
-take. A preliminary probe suggests the pattern persists at scale (two much
-larger models, 550B and 120B, produced five well-formed talk decisions
-between them, all declining), but five decisions is not a result; running
-it at frontier scale is the first experiment we would fund.
+conclude that frontier models would, and long-horizon planning is exactly
+the capability that makes a hand-1 codebook worth setting up for a hand-4
+payoff. What we can say is stronger than it may appear: the declination is
+not a capability ceiling, since the same models communicate competently
+when directed; not a parsing artifact, since schema misses are zero across
+692 offers; and not noise, since it holds in every rotation of every seed
+under both the neutral and the socially framed prompt. It is, however,
+prompt-fragile in a specific direction, so the honest statement is about a
+surface rather than about the models---these models decline these channels
+under a prompt that does not advocate for them---which is the shape of
+claim \S\ref{sec:promptsurface} argues results should be forced to take. A
+probe suggests the pattern persists at scale (two much larger models, 550B
+and 120B, produced five well-formed talk decisions between them, all
+declining), but five decisions is not a result; running it at frontier
+scale is the first experiment we would fund.
 
-Bootstrap intervals over a handful of seeds are likewise indicative, not
-decisive, and are reported to convey uncertainty rather than to claim
-significance we have not earned; deals are generated procedurally, so
-adding seeds is purely a matter of budget.
+Deals are generated procedurally from seeds, so the benchmark cannot be
+memorized and adding seeds is purely a matter of budget---which
+\S\ref{sec:main} shows is the binding constraint on every claim here.
 
 \textbf{Building a deception gym responsibly.} An environment that rewards
-misleading other agents deserves an explicit boundary. Ours is drawn at the
-game: every participant is a model, no human is deceived, the only currency
-is chips in a sandbox, and the benchmark returns no gradient---we measure
+misleading other agents deserves a boundary. Ours is drawn at the game:
+every participant is a model, no human is deceived, the only currency is
+chips in a sandbox, and the benchmark returns no gradient---we measure
 whether deception occurs and do not train for it. The capability is already
 deployed, and the alternative to a seeded, fully logged sandbox is not the
 absence of the behaviour but its absence from the record.
@@ -734,14 +730,14 @@ assistants, tool-using agents, and other multi-turn systems.
 agent to state its goal in a private channel, separate from the surface
 act, gets a deception and goal-drift signal without a judge---the same
 construction compares an assistant's stated plan against the tool calls it
-issues. \emph{(ii) Non-decision instrumentation}: multi-phase protocols are
-the norm in agent harnesses, and in each an off-schema reply can masquerade
-as a deliberate no-op, which the parsing rule of \S\ref{sec:nondecision}
-prevents in a few lines. \emph{(iii) Paired-trajectory scoring}: where an
-evaluation can replay the \emph{identical} stochastic context for every
-system under test---same seeded environment, same simulated user, same tool
-failures---differencing against the per-context mean removes context
-difficulty and lets small trial budgets produce usable intervals.
+issues. \emph{(ii) Non-decision instrumentation}: in any multi-phase
+harness an off-schema reply can masquerade as a deliberate no-op, which the
+parsing rule of \S\ref{sec:nondecision} prevents in a few lines.
+\emph{(iii) Paired-trajectory scoring}: where an evaluation can replay the
+\emph{identical} stochastic context for every system under test---same
+seeded environment, same simulated user, same tool failures---differencing
+against the per-context mean removes context difficulty, though
+\S\ref{sec:main} bounds how much that buys against stochastic agents.
 \emph{(iv) Prompt-surface pinning}: one switch restoring every literal of a
 published condition, a byte-identity test, and the rendered prompt stored
 beside every call---the cheapest of the four, and the one whose absence
@@ -750,12 +746,10 @@ silently invalidated six of our own runs.
 \subsection*{Conclusion}
 
 \textsc{BluffHouse} measures deception, detection, and information control
-without a judge in the loop, but the part we did not design is the part
-worth keeping: a social layer can be fully afforded, fully instrumented,
-and fully unused, and what closes that gap decides which channels get used,
-so an elicitation study measures a prompt surface rather than a model---and
-that surface is plural. Log the declined option, log the rendered prompt,
-and pin every literal you claim to hold fixed.
+without a judge, but the part we did not design is the part worth keeping:
+a social layer can be fully afforded, fully instrumented, and fully unused,
+and what closes that gap decides which channels get used---so an
+elicitation study measures a prompt surface, not a model.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -1129,6 +1123,14 @@ its adjusted chips would move between them. The comparison
 the same game to within one adjusted chip, the control bit-identical, while
 on seed 42 the same comparison swings 434 chips and reorders the table.
 
+Both columns come from the mode-6 bench collected alongside the mode-0
+floor, in the same window and the same prompt surface, rather than from the
+re-run reported in Table~\ref{tab:leaderboard}. The two mode-6 benches are
+the same condition and differ only by provider sampling, but the seed-41
+result below---identical play with and without the social layer---is a
+property of that matched pair, so we report the pair rather than mix
+sources.
+
 \begin{table}[t]
 \caption{Mode 0 (pure poker) versus mode 6 (every social channel
 available), same entrants, same seeds, same decks. Message count is zero in
@@ -1197,26 +1199,45 @@ client.
 \section{Additional results}
 \label{app:results}
 
-\paragraph{Per-seed adjusted chips (mode 6, default prompt).} Each seed is
-a complete duplicate cycle; the column sums to zero within a seed by
-construction.
+\paragraph{Per-seed adjusted chips (mode 6, pinned neutral surface).} Each
+seed is a complete duplicate cycle; the column sums to zero within a seed
+by construction. The sign changes across seeds are the agent-sampling
+variance discussed in \S\ref{sec:main}: every entrant, including the
+control, wins some seeds outright.
 
 \begin{center}
 \small
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrrrrrr}
 \toprule
-Entrant & Seed 41 & Seed 42 \\
+Entrant & 41 & 42 & 43 & 44 & 45 & 46 & 47 & 48 \\
 \midrule
-Mistral Medium & $+607.3$ & $+260.3$ \\
-Gemma-4-31B & $+202.7$ & $+79.3$ \\
-\texttt{random} (control) & $-810.0$ & $-339.7$ \\
+Mistral Medium & $+587$ & $+48$ & $+32$ & $+735$ & $-247$ & $+262$ & $-272$ & $+130$ \\
+Gemma-4-31B & $+386$ & $-334$ & $+35$ & $-88$ & $+14$ & $+54$ & $+462$ & $-58$ \\
+\texttt{random} (control) & $-973$ & $+286$ & $-67$ & $-647$ & $+233$ & $-315$ & $-190$ & $-72$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\paragraph{Win-rate matrix (mode 6).} Fraction of seeds in which the row
-entrant finished above the column entrant. The order is strict: Mistral
-Medium $>$ Gemma-4-31B $>$ \texttt{random}, with no inversions on any seed.
+\paragraph{Win-rate matrix (mode 6).} Fraction of the eight seeds in which
+the row entrant finished above the column entrant.
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & Gemma-4-31B & Mistral Medium & \texttt{random} \\
+\midrule
+Gemma-4-31B    & --- & $0.38$ & $0.75$ \\
+Mistral Medium & $0.62$ & --- & $0.62$ \\
+\texttt{random} & $0.25$ & $0.38$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The mean order (Mistral $>$ Gemma $>$ \texttt{random}) is not a
+strict one: the control finishes above Gemma-4-31B on two seeds and above
+Mistral Medium on three. At two seeds this matrix read $1.0$ in every cell,
+which is the sampling artifact \S\ref{sec:main} warns against.
 
 \paragraph{Channel adoption per seed, advocacy arm.} Six seeds, three
 rotations each (18 games), 491 talk offers. Every reply was well formed;
@@ -1253,9 +1274,9 @@ random bot, whose own action noise cannot be differenced away.
 
 \paragraph{Token accounting.} A mode-6 game costs roughly nine provider
 calls per seat per hand across the four phases (attention, talk, belief,
-action). Over the two-seed headline benchmark (six games of 8 hands),
-Gemma-4-31B consumed 310{,}097 input and 14{,}730 output tokens, and
-Mistral Medium 325{,}394 input and 15{,}844 output. The 21:1 input-to-output
+action). Over the eight-seed headline benchmark (24 games of 8 hands),
+Gemma-4-31B consumed 1{,}198{,}802 input and 55{,}683 output tokens, and
+Mistral Medium 1{,}157{,}184 input and 55{,}721 output. The 21:1 input-to-output
 ratio is the structural cost of trajectory-level evaluation: each decision
 re-sends a growing observation history, so input tokens scale with the
 square of game length while replies stay terse. Free tiers meter the
