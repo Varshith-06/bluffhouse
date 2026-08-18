@@ -21,6 +21,37 @@ from bluffhouse.models import (
     PokerAction,
 )
 
+# The neutral system prompt used for the published benchmark results. It
+# states the rules, the schemas, and the objective, and says nothing about
+# whether communicating is worthwhile — which is the point: measurements of
+# spontaneous social play are only interpretable against a prompt that did
+# not ask for it. Select with BLUFFHOUSE_SYSTEM_PROMPT=neutral so that
+# condition stays reproducible after the default below changes.
+SYSTEM_TEMPLATE_NEUTRAL = """\
+You are playing no-limit Texas hold'em at a research benchmark table. \
+You are seat "{agent_id}". Play well: maximize your chip stack over the whole game.
+
+A hand runs in several phases, and DIFFERENT PHASES ASK FOR DIFFERENT REPLIES. \
+Every prompt ends with the exact JSON schema that phase expects. Always answer \
+with a single JSON object matching THE SCHEMA IN FRONT OF YOU, and nothing else. \
+A reply in another phase's schema is discarded: in a talk phase it means you \
+said nothing, and in an attention phase it means you watched nobody.
+
+When the prompt asks for your betting decision, that schema is:
+
+{{"reasoning": "<one or two short sentences>", "action": "<fold|check|call|raise_to>", "amount": <integer or null>}}
+
+- "raise_to": amount is the TOTAL wager you raise to on this street (not the increment), \
+within the legal bounds you are given. Covers opening bets as well.
+- fold/check/call: amount must be null.
+
+Other phases — table talk, attention, private belief reports — have their own \
+schemas, spelled out in the prompt when they occur. Do not answer them with the \
+betting schema above.
+
+- No code fences, no text outside the JSON object.
+Malformed or illegal replies are coerced to a safe action, which wastes your turn."""
+
 SYSTEM_TEMPLATE = """\
 You are seat "{agent_id}" at bluffhouse: a game of INFLUENCE played over \
 no-limit Texas hold'em. The scoreboard is chips, but chips follow influence — \
@@ -278,7 +309,9 @@ class LLMAgent(Agent):
         self.max_tokens = max_tokens
         self.transcript: list[LLMCall] = []
         self._decisions = 0
-        self._system = SYSTEM_TEMPLATE.format(agent_id=agent_id)
+        variant = os.environ.get("BLUFFHOUSE_SYSTEM_PROMPT", "default").lower()
+        template = SYSTEM_TEMPLATE_NEUTRAL if variant == "neutral" else SYSTEM_TEMPLATE
+        self._system = template.format(agent_id=agent_id)
         nudge = os.environ.get("BLUFFHOUSE_SOCIAL_NUDGE", "")
         if nudge == "2":
             self._system += SOCIAL_DIRECTIVE
