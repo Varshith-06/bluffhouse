@@ -9,8 +9,9 @@ if [ -f "$KEYS_ENV" ]; then source "$KEYS_ENV"; fi
 
 export BLUFFHOUSE_MAX_TOKENS=2000
 export BLUFFHOUSE_LLM_RETRIES=5
-export BLUFFHOUSE_GOOGLE_INTERVAL=2.5
-export BLUFFHOUSE_MISTRAL_INTERVAL=1.2
+# per-model requests-per-minute ceilings (free-tier caps are per model)
+export BLUFFHOUSE_GEMMA_4_31B_IT_RPM=24
+export BLUFFHOUSE_MISTRAL_MEDIUM_LATEST_RPM=50
 
 # The two models with sustainable free-tier capacity, plus the bot control
 # that anchors the duplicate scale at zero token cost.
