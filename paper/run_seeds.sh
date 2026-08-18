@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Seed expansion for the headline benchmark.
 #
+#   bash paper/run_seeds.sh redo     # headline bench, all seeds, pinned prompt
 #   bash paper/run_seeds.sh extend   # more seeds, published 3-entrant roster
 #   bash paper/run_seeds.sh wide     # 3 model families + control, fresh bench
 #   bash paper/run_seeds.sh mode0    # matching mode-0 floor for the ladder
@@ -10,6 +11,15 @@
 # influence, which is a different experiment (see the paper's reproducibility
 # appendix). Mixing the two in one benchmark would be exactly the error the
 # paper warns about.
+#
+# That pin used to cover only the system message. The 2026-08-18 `extend` run
+# (runs/e1-final/20260818-034855-seeds, seeds 43-48) therefore paired the
+# neutral system prompt with main's REWRITTEN talk prompt, which argues for
+# working the table and answers, point by point, the reasons models had given
+# for staying silent. Those seeds are a separate elicitation arm, not an
+# extension of the headline bench; `redo` is the corrected re-run. The pin now
+# covers the talk phase too (comm_instructions_neutral), with regression tests
+# in tests/test_llm_agent.py.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -28,7 +38,12 @@ PUBLISHED="google:gemma-4-31b-it,mistral:mistral-medium-latest,random"
 WIDE="google:gemma-4-31b-it,mistral:mistral-medium-latest,google:gemini-3.1-flash-lite,random"
 HANDS="${HANDS:-8}"
 
-case "${1:-extend}" in
+case "${1:-redo}" in
+  redo)     # every seed under one pinned prompt, in one window; seeds 41-42
+            # are re-run rather than reused, so the bench is also a replication
+            # test of the zero-message result
+    uv run bluffhouse bench --models "$PUBLISHED" --hands "$HANDS" --mode 6 \
+      --seeds "${SEEDS:-41,42,43,44,45,46,47,48}" --out runs/e1-pinned ;;
   extend)   # resume the published bench and add seeds; entrant set must match
     uv run bluffhouse bench --models "$PUBLISHED" --hands "$HANDS" --mode 6 \
       --seeds "${SEEDS:-41,42,43,44,45,46,47,48}" \

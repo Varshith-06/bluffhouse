@@ -4,7 +4,12 @@ every provider."""
 import pytest
 
 from bluffhouse.agents import CheckCallBot, LLMAgent
-from bluffhouse.agents.llm import extract_json, render_view
+from bluffhouse.agents.llm import (
+    comm_instructions,
+    comm_instructions_neutral,
+    extract_json,
+    render_view,
+)
 from bluffhouse.harness import GameHarness
 from bluffhouse.llm import LLMClient, LLMError, LLMRequest, MockClient
 from bluffhouse.models import (
@@ -205,3 +210,47 @@ def test_llm_agent_plays_full_game_via_mock():
     prompt = client.requests[-1].messages[0]["content"]
     assert "=== Hand 3 so far ===" in prompt and "You are dealt" in prompt
     assert "=== Earlier ===" in prompt  # prior-hand summaries present by hand 3
+
+
+# ── the published prompt condition ──────────────────────────────────
+
+
+def test_neutral_pins_the_talk_prompt_not_only_the_system_prompt(monkeypatch):
+    """BLUFFHOUSE_SYSTEM_PROMPT=neutral must restore the whole prompt surface
+    the published benchmark ran under. It once pinned only the system message
+    while the talk phase silently followed the new default, which turned a
+    seed extension into a different experiment: the default talk prompt argues
+    for working the table and pre-rebuts the reasons models gave for declining.
+    """
+    monkeypatch.setenv("BLUFFHOUSE_SYSTEM_PROMPT", "neutral")
+    view = make_view().model_copy(update={"mode": 6})
+    silent = '{"message": null, "channel": "speech", "intent": "reveal nothing"}'
+    client = MockClient([silent])
+    LLMAgent("A", client).communicate(view)
+
+    request = client.requests[-1]
+    assert request.system.startswith("You are playing no-limit Texas hold'em")
+    talk = request.messages[0]["content"]
+    assert "you may send ONE message — or stay silent." in talk
+    for advocacy in (
+        "Silence is allowed, but it is the exception",
+        "The private channels are where influence turns into chips",
+        "Pattern heat",
+        "why this message, or why silence",
+    ):
+        assert advocacy not in talk
+
+
+def test_default_talk_prompt_argues_for_speaking():
+    """The complement, so the two conditions cannot silently converge."""
+    talk = comm_instructions(6)
+    assert "Silence is allowed, but it is the exception" in talk
+    assert '"reasoning"' in talk
+    assert '| "note" | "accusation"' in talk
+
+
+def test_neutral_talk_prompt_offers_only_the_published_channel_enum():
+    talk = comm_instructions_neutral(6)
+    assert '"channel": "speech" | "whisper" | "gesture"' in talk
+    assert '"note" | "accusation"' not in talk
+    assert '"reasoning"' not in talk
