@@ -12,6 +12,7 @@ from contextlib import contextmanager
 import os
 import re
 import threading
+import time
 
 from pydantic import BaseModel
 
@@ -92,12 +93,42 @@ def _provider_limit(provider: str) -> int:
         return 1
 
 
+def _provider_interval(provider: str) -> float:
+    key = re.sub(r"[^A-Z0-9]+", "_", provider.upper()).strip("_")
+    raw = os.environ.get(
+        f"BLUFFHOUSE_{key}_INTERVAL",
+        os.environ.get("BLUFFHOUSE_LLM_INTERVAL", "0"),
+    )
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return 0.0
+
+
+_pace_locks: dict[str, threading.Lock] = {}
+_last_start: dict[str, float] = {}
+
+
 @contextmanager
-def provider_concurrency(provider: str) -> Iterator[None]:
-    """Limit concurrent live calls per provider across parallel rotations."""
+def provider_concurrency(provider: str, model: str | None = None) -> Iterator[None]:
+    """Limit concurrent live calls per provider across parallel rotations,
+    and optionally pace call starts (BLUFFHOUSE_<PROVIDER>_INTERVAL seconds
+    between starts) to stay under free-tier requests-per-minute caps.
+    Pacing is per (provider, model): free-tier RPM caps are per model, so
+    two models behind one provider each get the full interval budget."""
     limit = _provider_limit(provider)
     key = f"{provider}:{limit}"
+    pace_key = f"{provider}/{model or ''}"
     with _semaphores_lock:
         semaphore = _semaphores.setdefault(key, threading.Semaphore(limit))
+        pace_lock = _pace_locks.setdefault(pace_key, threading.Lock())
     with semaphore:
+        interval = _provider_interval(provider)
+        if interval > 0:
+            with pace_lock:
+                now = time.monotonic()
+                wait = _last_start.get(pace_key, -interval) + interval - now
+                if wait > 0:
+                    time.sleep(wait)
+                _last_start[pace_key] = time.monotonic()
         yield

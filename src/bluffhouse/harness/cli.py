@@ -16,7 +16,10 @@ from bluffhouse.llm import AnthropicClient, LLMClient, LLMError, OpenAICompatCli
 from bluffhouse.models import BoardDealt, HandEnded, HandStarted, PotAwarded, ShowdownReveal, TableConfig
 
 BOT_KINDS = ("random", "checkcall", "fold", "allin")
-LLM_PROVIDERS = ("anthropic", "claude", "openai", "xai", "grok", "openrouter", "ollama")
+LLM_PROVIDERS = (
+    "anthropic", "claude", "openai", "xai", "grok", "openrouter",
+    "groq", "cerebras", "mistral", "google", "ollama",
+)
 
 
 def build_client(kind: str, api_key: str | None = None) -> LLMClient:
@@ -25,7 +28,10 @@ def build_client(kind: str, api_key: str | None = None) -> LLMClient:
     try:
         if provider in ("anthropic", "claude"):
             return AnthropicClient(model or "claude-opus-4-8", api_key=api_key)
-        if provider in ("openai", "xai", "grok", "openrouter", "ollama"):
+        if provider in (
+            "openai", "xai", "grok", "openrouter",
+            "groq", "cerebras", "mistral", "google", "ollama",
+        ):
             if not model:
                 raise SystemExit(f"'{provider}' needs a model, e.g. {provider}:MODEL")
             preset = {"grok": "xai"}.get(provider, provider)
