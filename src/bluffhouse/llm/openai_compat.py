@@ -20,6 +20,13 @@ PRESETS: dict[str, tuple[str | None, str | None]] = {
     "openai": (None, "OPENAI_API_KEY"),
     "xai": ("https://api.x.ai/v1", "XAI_API_KEY"),
     "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
+    "groq": ("https://api.groq.com/openai/v1", "GROQ_API_KEY"),
+    "cerebras": ("https://api.cerebras.ai/v1", "CEREBRAS_API_KEY"),
+    "mistral": ("https://api.mistral.ai/v1", "MISTRAL_API_KEY"),
+    "google": (
+        "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "GEMINI_API_KEY",
+    ),
     "ollama": ("http://localhost:11434/v1", None),
 }
 
@@ -31,8 +38,10 @@ class OpenAICompatClient(LLMClient):
         preset: str = "openai",
         base_url: str | None = None,
         api_key: str | None = None,
-        max_retries: int = 3,
+        max_retries: int | None = None,
     ):
+        if max_retries is None:
+            max_retries = int(os.environ.get("BLUFFHOUSE_LLM_RETRIES", "3"))
         if preset not in PRESETS:
             raise ValueError(f"unknown preset '{preset}' (choose from {', '.join(PRESETS)})")
         preset_url, key_env = PRESETS[preset]
@@ -51,7 +60,7 @@ class OpenAICompatClient(LLMClient):
         messages = [{"role": "system", "content": request.system}, *request.messages]
         start = time.monotonic()
         try:
-            with provider_concurrency(self.provider):
+            with provider_concurrency(self.provider, self.model):
                 response = self._client.chat.completions.create(
                     model=self.model,
                     messages=messages,

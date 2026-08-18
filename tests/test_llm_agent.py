@@ -77,6 +77,38 @@ def test_extract_json_tolerates_fences_and_prose():
         extract_json("I fold.")
 
 
+def test_thought_blocks_are_stripped_before_json():
+    reply = '<thought>weigh {a} vs {b}</thought>\n{"action": "fold"}'
+    assert extract_json(reply) == {"action": "fold"}
+
+
+def test_betting_reply_during_talk_phase_is_a_fault_not_silence():
+    """A wrong-schema reply must never be recorded as a deliberate choice:
+    it looks identical to 'stay silent' unless the parser distinguishes it."""
+    view = make_view().model_copy(update={"mode": 6})
+    agent = LLMAgent("A", MockClient([CALL_JSON]))
+    assert agent.communicate(view) is None
+    call = agent.transcript[-1]
+    assert call.phase == "comm"
+    assert "wrong schema" in (call.parse_error or "")
+
+
+def test_deliberate_silence_is_not_a_fault():
+    """The complement: a correctly-schema'd refusal to speak is a decision."""
+    view = make_view().model_copy(update={"mode": 6})
+    silent = '{"message": null, "channel": "speech", "intent": "reveal nothing"}'
+    agent = LLMAgent("A", MockClient([silent]))
+    assert agent.communicate(view) is None
+    assert agent.transcript[-1].parse_error is None
+
+
+def test_betting_reply_during_attention_phase_is_a_fault():
+    view = make_view().model_copy(update={"mode": 6})
+    agent = LLMAgent("A", MockClient([CALL_JSON]))
+    assert agent.attend(view) is None
+    assert "wrong schema" in (agent.transcript[-1].parse_error or "")
+
+
 def test_valid_decision_becomes_action():
     agent = LLMAgent("A", MockClient(['{"action": "raise_to", "amount": 60}']))
     action = agent.act(make_view())
