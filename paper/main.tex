@@ -54,39 +54,39 @@
 \maketitle
 
 \begin{abstract}
-Evaluating whether language models can deceive, detect deception, and control
+Evaluating whether language models deceive, detect deception, and control
 information in multi-agent interaction usually requires an LLM judge or human
-labels, both of which are expensive, biased, and unfalsifiable at scale. We
-present \textsc{BluffHouse}, a no-limit hold'em environment and benchmark in
-which every social metric is a mechanical count over a ground-truth event log.
-Three design choices make this possible. First, every communicative act
-carries both a \emph{surface} text shown to the table and a private declared
-\emph{intent} visible only to the environment, so the gap between what an
-agent says and what it means is recorded, not inferred. Second, perception is
-resolved by seeded dice at emit time: who overhears a whisper or notices a
-gesture is written into the event itself, giving each agent its own subjective
-slice of one objective history. Third, a duplicate-poker protocol---entrants
-rotating through anonymized seats over identical seeded deals---cancels card
-luck by construction, cutting outcome variance to roughly a third of a naive
-game. A seven-level ``mode ladder'' adds one social channel at a time, and the
-benchmark is deterministic given a seed, needs no judges or human labels, and
-replays byte-identically from its logs. Running it surfaces lessons for interactive
-evaluation generally. A fully afforded social layer went almost entirely
-unused---first because a schema collision in our own harness recorded
-off-schema replies as deliberate silence; then, once that was fixed,
-because models coherently \emph{declined} to speak, treating the channel as
-leakage risk; yet under one directive they used it fluently on every
-opportunity. A fourth condition, run by accident when a branch merge
-rewrote one phase's prompt beneath a pinned system message, proved the most
-informative: a prompt that \emph{argues} for the private channels rather
-than compelling speech raised adoption to 62\%, and unlike the directive
-moved 55\% of that traffic onto the covert channels the benchmark exists to
-price. Affordance, propensity, and capability are three different things
-that an outcome-only benchmark reports as one number; elicitation
-determines not only how much agents communicate but through which channel,
-so ``messages sent'' ranks these conditions backwards; and an experimental
-condition is a whole prompt surface, no more reproducible than its
-least-pinned literal.
+labels: expensive, biased, and unfalsifiable at scale. We present
+\textsc{BluffHouse}, a no-limit hold'em environment and benchmark in which
+every social metric is instead a mechanical count over a ground-truth event
+log. Three mechanisms remove the judge. Every communicative act carries a
+\emph{surface} text shown to the table and a declared \emph{intent} visible
+only to the environment, so the gap between what an agent says and what it
+means is recorded rather than inferred. Perception is resolved by seeded dice
+at emit time---who overhears a whisper is written into the event itself---so
+each agent's subjective world is an RNG-free projection of one objective
+history. And a duplicate protocol, entrants rotating through anonymized seats
+over identical seeded deals, cancels card luck by construction, cutting
+outcome variance to roughly a third of a naive game.
+
+What the instrument then measured was not social skill but its absence, and
+separating three explanations for that absence is our main result. Across 24
+games entrants took none of 692 opportunities to speak. This is not a
+measurement artifact, though it first presented as one: a schema collision
+recorded off-schema replies as deliberate silence until non-decisions were
+instrumented as a distinct outcome. Nor is it incapacity, since a single
+directive elicits fluent messages on every opportunity. The models are
+declining the channels, with coherent private reasons. A prompt that
+\emph{argues} for the private channels rather than compelling speech raises
+adoption to 62\% and moves 55\% of it onto the covert channels the benchmark
+exists to price, where the directive leaves them empty. Three lessons
+generalize beyond poker. Affordance, propensity, and capability are distinct
+states that an outcome-only benchmark reports as one number. Elicitation
+selects which channel agents use and not merely how much they say, so
+``messages sent'' ranks these conditions backwards. And because a multi-phase
+harness renders a separate prompt literal per phase, an experimental condition
+is a whole prompt surface---no more reproducible than its least-pinned
+literal.
 \end{abstract}
 
 \section{Introduction}
@@ -116,12 +116,11 @@ This paper describes an environment built so that the judge is unnecessary.
 augmented with social channels: table talk, whispers, physical notes,
 symbolic gestures, accusations, and staged distractions. The chips are the
 cover story; the question is whether a model can read, move, and mislead a
-table of other models. We built it to answer that and learned something
-more useful: with the channels fully open the models did not use them, and
-why---and what eventually changed it---was recoverable only because the
-environment records refusals and rendered prompts, not just actions. The
-design contributes three evaluation mechanisms; running it contributes two
-lessons about what such mechanisms can and cannot see.
+table of other models. The answer we measured is that it does not try, and
+most of this paper is about how an evaluation tells that apart from the two
+other things it looks exactly like---a model that cannot, and a harness that
+miscounts. The environment contributes three measurement mechanisms; running
+it contributes three findings about what such mechanisms can and cannot see.
 
 \textbf{1. The intent--surface split (grader design).} Every communicative
 act carries two texts: the \emph{surface} form shown to the table, and a
@@ -150,44 +149,52 @@ Around these mechanisms we build a benchmark with a seven-level \emph{mode
 ladder}, from pure poker up to unrefereed manipulation, adding one social
 channel at a time so that running the same entrants over the same seeds
 across modes isolates which channel a behaviour depends on. Attributing
-\emph{chips} to a channel by differencing across modes proves harder than
-we expected, for reasons \S\ref{sec:ladder} makes precise.
+\emph{chips} to a channel by differencing across modes is bounded by agent
+sampling variance, for reasons \S\ref{sec:ladder} makes precise. Three
+findings then follow from running the instrument, and none is specific to
+cards.
 
-\textbf{4. Separating measurement failure, propensity, and capability.}
-This one emerged from running the benchmark rather than designing it. Our
-first mode-6 runs recorded one message across 11 games, the cause a schema
-collision in our own harness: asked for a message, models replied with the
-betting schema, and a missing \texttt{message} key parsed as chosen
-silence---the evaluator's design error recorded as a finding about the
-agents (\S\ref{sec:nondecision}). With that fixed, models emit the correct
-schema and still decline to speak, giving coherent private reasons---yet a
-single directive elicits fluent, purposeful communication on every
-opportunity. An outcome-only benchmark reports all three situations
-identically; separating them requires logging the declined option as an
-event and varying elicitation while holding the environment fixed
-(\S\ref{sec:elicitation}). A fourth arm sharpens it further: prompting that
-\emph{argues} for the covert channels, rather than requiring speech, is the
-only condition in which models used them at all, so elicitation selects the
-\emph{kind} of social behaviour and not merely its volume---and the metric
-most benchmarks would report, messages sent, orders those two conditions
-backwards.
+\textbf{4. Affordance, propensity, and capability are distinct, and outcome
+metrics collapse them (reliability across repeated trials).} Across 24 games
+under a neutral prompt, entrants took none of 692 opportunities to speak.
+Three very different situations produce that same zero: a harness that
+miscounts, a model that declines, and a model that cannot. Telling them apart
+requires instrumenting the \emph{non}-decision, so that an off-schema reply is
+classified as a fault rather than a choice (\S\ref{sec:nondecision})---a
+correction worth 27.7\% of talk replies in our own first runs---and then
+varying elicitation while holding the environment fixed
+(\S\ref{sec:elicitation}). Under the neutral prompt these models decline the
+channels and state why; under one directive they use them on every
+opportunity.
 
-\textbf{5. A prompt surface is the experimental condition.} That fourth arm
-was an accident: a branch merge rewrote one phase's instruction block while
-the pin we relied on covered only the system message, and six of eight
-seeds silently changed condition without failing a test, logging a fault,
-or producing a visibly anomalous table (\S\ref{sec:promptsurface}). We
-report it as a result rather than a correction because the general form
-applies to every multi-phase agent harness---each phase is an
-independently editable prompt literal, and a pin on a subset of them is not
-a pin---and because what caught it was an artifact policy rather than a
-code review: storing the fully rendered prompt with every provider call is
-what made the two conditions distinguishable after the fact.
+\textbf{5. Elicitation selects the channel, not merely the volume.} A prompt
+that \emph{argues} for the private channels, quoting their interception odds
+instead of compelling speech, is the only condition in which the covert layer
+carried traffic at all: 62\% adoption, 55\% of it whispered, against the
+directive's 100\% adoption and 0\% covert (\S\ref{sec:elicitation}). Every
+metric the perception machinery exists to compute is empty in exactly the
+condition that a ``messages sent'' metric ranks first. What an elicitation
+study measures depends on which axis of behaviour its metric can see, and
+volume is the axis that misleads.
+
+\textbf{6. An experimental condition is a prompt surface, not a prompt
+(reproducibility).} A multi-phase harness renders a separate instruction block
+per phase, each an independently editable literal, so a pin covering a subset
+of them is not a pin. We establish this the expensive way: with the system
+message pinned and the talk-phase block free to drift, six of eight seeds
+changed condition without failing a test, logging a fault, or producing a
+visibly anomalous table (\S\ref{sec:promptsurface}). What surfaced it was an
+artifact policy rather than a code review---the fully rendered prompt is
+stored beside every provider call---which is also the cheapest remedy we can
+recommend.
 
 We benchmark Gemma-4-31B and Mistral Medium against a random-bot control
-across modes and seeds with bootstrap intervals, Gemini~3.1 Flash Lite
-additionally in the elicitation pilots, and validate the instrument with
-bots-only tournaments and determinism tests.
+across modes and seeds with bootstrap intervals, add Gemini~3.1 Flash Lite in
+the elicitation pilots, and validate the instrument with bots-only
+tournaments and determinism tests. Mechanisms 1--3 and findings 4--6 are
+stated in poker's vocabulary but none depends on poker;
+\S\ref{sec:transfers} restates each for assistants, tool-using agents, and
+other multi-turn systems.
 
 \section{Related work}
 \label{sec:related}
@@ -363,9 +370,9 @@ nothing errors, and the log states that the agent \emph{chose} not to speak.
 
 The two cases license opposite conclusions: genuine silence is a strategic
 result about the model, while wrong-schema silence is a fact about prompt
-design laundered into one. We were briefly prepared to report the latter as
-the former (\S\ref{sec:elicitation}). We therefore state a general rule for
-multi-phase agent evaluation:
+design laundered into one. Our own first runs produced the second and read as
+the first (\S\ref{sec:elicitation}), which is why we state the rule for
+multi-phase agent evaluation generally:
 \textbf{a non-action must be distinguishable from an off-schema action at
 the point of parsing, or the environment will silently attribute the
 evaluator's design error to the agent.} Concretely, the environment
@@ -417,12 +424,16 @@ per mode and regression tests for the non-decision instrumentation of
 \label{sec:elicitation}
 
 Our most robust finding is that a fully afforded social layer goes almost
-entirely unused under a prompt that does not ask for it---and that what
-closes the gap also decides \emph{which} channels get used. We separate
-four explanations; the fourth arrived by accident and is the one we would
-most want a reader to take away.
+entirely unused under a prompt that does not ask for it---and that whatever
+closes that gap also decides \emph{which} channels get used. A count of zero
+messages admits three explanations: the instrument is miscounting, the models
+are declining, or the models are unable. The ladder of prompt conditions in
+Table~\ref{tab:elicitation} eliminates them in turn, and a fourth condition
+then separates the volume of social behaviour from its kind.
 
-\textbf{(1) The harness artifact.} Under the schema-anchored system prompt
+\textbf{(1) Ruling out the instrument.} Silence is precisely what a
+miscounting parser reports, so the instrument is the first candidate to
+eliminate. Under the schema-anchored system prompt
 (\S\ref{sec:nondecision}), models answered the talk and belief phases with
 betting objects: across 11 games and 303 opportunities per phase, 27.7\% of
 talk replies and 12.5\% of belief replies were off-schema
@@ -470,10 +481,9 @@ addressee, and no risk, leaving every metric the perception machinery can
 price at zero.
 
 \textbf{(4) Elicitation selects the channel, not just the volume.} The
-fourth arm was not designed---it was a mistake we caught after the fact
-(\S\ref{sec:promptsurface}), and it is more informative than the arm we
-meant to run. Its talk prompt keeps the same schema and channels but argues
-for using them: silence is ``the exception, not the default'', the
+fourth condition holds the system message, schema, channels, and environment
+fixed and replaces only the talk-phase instruction block with one that argues
+for using the channels: silence is ``the exception, not the default'', the
 interception odds are quoted, and ``the private channels are where
 influence turns into chips''. It answers, point for point, the three
 reasons the models had given for staying silent.
@@ -557,13 +567,21 @@ requires logging the declined option as an event---the road not taken has
 to be in the trajectory---and an arm that varies framing while holding the
 environment fixed.
 
-\textbf{The intent channel reports on the evaluator.} Recording declared intent has one further use, visible in the directed arm: an intent there reads, in full, ``establish a friendly table image \emph{and satisfy the communication requirement}''---the model naming the instruction as part of its own motivation. That is the clearest evidence the directed condition is a reachability control rather than a behavioural one, and an argument for a private intent channel in any elicitation study: it is where an agent tells you it is performing for the evaluator.
+\textbf{The intent channel reports on the evaluator.} Recording declared
+intent has one further use, visible in the directed arm: an intent there
+reads, in full, ``establish a friendly table image \emph{and satisfy the
+communication requirement}''---the model naming the instruction as part of
+its own motivation. That is the clearest evidence the directed condition is a
+reachability control rather than a behavioural one, and an argument for a
+private intent channel in any elicitation study: it is where an agent tells
+you it is performing for the evaluator.
 
 \subsection{A prompt condition is a surface, not a string}
 \label{sec:promptsurface}
 
-The fourth arm exists because we ran it without meaning to, and the way it
-happened defeated the specific safeguard we had built against it.
+The advocacy condition entered the experiment before we intended it to, and
+the manner of its arrival is the finding of this section: it defeated the
+specific safeguard we had built against exactly this failure.
 
 Extending the headline benchmark with more seeds, we pinned the condition
 with the environment variable the codebase provides for exactly this
@@ -591,10 +609,9 @@ The repair doubles as the cleanest experiment here. Re-running all eight
 seeds under a surface pinned end to end---same models, decks, seats and
 system message, one instruction block different---gives 0 messages over 692
 talk offers where the drifted surface gave 305 over 491 on overlapping
-seeds. Where \S\ref{sec:elicitation} varies arms that differ in several
-ways at once, this pair differs in exactly one literal and moves adoption
-from total abstention to 62\%, the majority of it covert. We would not have
-designed the ablation; we ran it by having to undo the mistake.
+seeds. Where the arms of \S\ref{sec:elicitation} differ in several ways at
+once, this pair differs in exactly one literal, and that one literal moves
+adoption from total abstention to 62\%, the majority of it covert.
 
 \textbf{Pin the surface, not the message.} Any harness rendering different
 text for different phases---plan, act, reflect, self-report, tool
@@ -610,7 +627,7 @@ a byte-identity regression test of three assertions.
 lived between a pinned literal and an unpinned one, and only the rendered
 artifact distinguishes them. It costs storage and nothing else.
 
-\textbf{We were lucky in the size of the effect.} The drift announced
+\textbf{Detection depended on the size of the effect.} The drift announced
 itself only because it moved behaviour from 0 messages to 305. A revision
 shifting adoption by a few percent, or changing only tone, would have
 produced a table just as well formed and just as wrong with nothing
@@ -671,7 +688,14 @@ control, and cover have no data behind them. What the table measures is
 no-limit hold'em skill plus protocol discipline, at a table that offered a
 social game nobody played.
 
-\textbf{What differencing cannot do.} \label{sec:ladder}Modes 0 and 6 present the same entrants with the same seeded deals, so a model extracting value from the social channels should move between them. It does not, instructively: on seed 41 the modes are the same game to within one adjusted chip, while on seed 42 the comparison swings 434 chips and reorders the table---with zero messages in either mode, so no channel can be responsible. \textbf{Pairing on identical decks cancels environment stochasticity; it does nothing about agent stochasticity} (Appendix~\ref{app:ladder}).
+\textbf{What differencing cannot do.}\label{sec:ladder} Modes 0 and 6 present
+the same entrants with the same seeded deals, so a model extracting value
+from the social channels should move between them. It does not,
+instructively: on seed 41 the modes are the same game to within one adjusted
+chip, while on seed 42 the comparison swings 434 chips and reorders the
+table---with zero messages in either mode, so no channel can be responsible.
+\textbf{Pairing on identical decks cancels environment stochasticity; it does
+nothing about agent stochasticity} (Appendix~\ref{app:ladder}).
 
 \section{Discussion and limitations}
 \label{sec:limits}
@@ -722,7 +746,8 @@ whether deception occurs and do not train for it. The capability is already
 deployed, and the alternative to a seeded, fully logged sandbox is not the
 absence of the behaviour but its absence from the record.
 
-\subsection*{What transfers beyond poker}
+\subsection{What transfers beyond poker}
+\label{sec:transfers}
 
 Four of our mechanisms are not poker-specific and apply to evaluating
 assistants, tool-using agents, and other multi-turn systems.
@@ -740,16 +765,18 @@ against the per-context mean removes context difficulty, though
 \S\ref{sec:main} bounds how much that buys against stochastic agents.
 \emph{(iv) Prompt-surface pinning}: one switch restoring every literal of a
 published condition, a byte-identity test, and the rendered prompt stored
-beside every call---the cheapest of the four, and the one whose absence
-silently invalidated six of our own runs.
+beside every call---the cheapest of the four to implement, and the only one
+whose absence silently changes what a run measures.
 
 \subsection*{Conclusion}
 
 \textsc{BluffHouse} measures deception, detection, and information control
-without a judge, but the part we did not design is the part worth keeping:
-a social layer can be fully afforded, fully instrumented, and fully unused,
-and what closes that gap decides which channels get used---so an
-elicitation study measures a prompt surface, not a model.
+without a judge, and the instrument's most useful reading is a null one: a
+social layer can be fully afforded, fully instrumented, and fully unused. An
+evaluation that reports only outcomes cannot distinguish that state from
+incapacity, or from its own parser miscounting, and the elicitation that
+closes the gap decides which channels the traffic uses---so what such a
+study measures is a prompt surface, not a model.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -759,49 +786,36 @@ elicitation study measures a prompt surface, not a model.
 \section{Environment details}
 \label{app:env}
 
-\subsection{One log, many worlds}
-\label{sec:log}
+This appendix supplies the implementation detail behind \S\ref{sec:env}
+rather than restating it.
 
-Every state change is a typed event in an append-only log, the single
-source of truth; per-agent observations, all scoring, and the replay viewer
-are deterministic, RNG-free projections of it. Randomness enters in exactly
-two places---the deck and the perception rolls---both drawn from
-SHA-256-namespaced sub-seeds of the run seed, so given a seed and fixed
-agents a run is byte-identical, a property tested for every mode. Events an
-agent failed to notice are \emph{omitted} from its observation stream: real
+\subsection{Determinism and the projection layer}
+\label{app:log}
+
+Randomness enters a run in exactly two places, the deck and the perception
+rolls, both drawn from SHA-256-namespaced sub-seeds of the run seed. The
+projection layer that mints each agent's observation stream from the log
+contains none, so given a seed and fixed agents a run is byte-identical---a
+property the test suite checks at every mode. Events an agent failed to
+notice are \emph{omitted} from its stream rather than marked as unseen: real
 people do not know what they did not see, and that absence is part of the
 test.
 
-\subsection{The intent--surface split}
-\label{sec:intent}
+\subsection{Perception constants and codebooks}
+\label{app:perception}
 
-Every communication carries two texts. The \emph{surface} is what the table
-can perceive: the words said, or what a gesture looks like (``taps his
-chips twice, slowly''). The \emph{intent} is what the sender declares the
-act means---``set up a collusion deal with P4''---and is visible only to
-the environment. The gap between them is how deception stays measurable
-without labels: the agent tells the environment what it is really doing
-while showing the table something else. The environment records this social
-truth but never referees it---a lie that lands is the benchmark working,
-not a rules violation---and \S\ref{sec:limits} discusses why the metrics do
-not depend on agents being honest in the intent channel.
-
-\subsection{Resolve-at-emit perception}
-\label{sec:perception}
-
-When a message is emitted, every possible observer receives a notice
-probability $p = b(\text{modality}) \times (1 - \text{subtlety}) \times
-(1 - \text{stealth}) \times m_{\text{att}} \times (1 - \text{noise})$ and
-one seeded roll. Base rates $b$ run from $0.35$ for a whisper down to
-$0.18$ for eye contact, and the attention multiplier $m_{\text{att}}$ is
-described below (Appendix~\ref{app:formulas}). \emph{Subtlety} is the
-sender's own dial and cuts both ways: it suppresses interception \emph{and}
-raises the chance the intended recipient misses the message; noise is
-raised by staged distractions (mode~6). Outcomes are recorded inside the
-event as ground truth
-(Figure~\ref{fig:receptions}, Appendix~\ref{app:schema}): the target got it
-\texttt{clear}; a bystander caught a word-shredded \texttt{fragment} with a
-confidence score; everyone else \texttt{missed} it.
+The notice probability of \S\ref{sec:perception} is
+$p = b(\text{modality}) \times (1 - \text{subtlety}) \times
+(1 - \text{stealth}) \times m_{\text{att}} \times (1 - \text{noise})$,
+evaluated once per potential observer. Base rates $b$ run from $0.35$ for a
+whisper down to $0.18$ for eye contact, and the attention multiplier
+$m_{\text{att}}$ is given in Appendix~\ref{app:formulas}. \emph{Subtlety} is
+the sender's own dial and cuts both ways: it suppresses interception
+\emph{and} raises the chance the intended recipient misses the message.
+Noise is raised by staged distractions (mode~6). The outcome---\texttt{clear},
+a word-shredded \texttt{fragment} with a confidence score, or
+\texttt{missed}---is written into the event itself
+(Figure~\ref{fig:receptions}, Appendix~\ref{app:schema}).
 
 The environment never decodes gestures. If an agent whispers ``when I tap
 my chips twice, raise'' in hand~1 and taps its chips in hand~4, the
@@ -836,14 +850,6 @@ exactly the weight the table gives them; \emph{distractions} raise table
 noise for a street, suppressing everyone's perception but the stager's; and
 a \emph{heat ledger} increments only when an observer actually noticed a
 covert act.
-
-
-Malformed play never crashes a game: prose replies get one correction round
-trip then a safe fallback, illegal actions are coerced to the closest legal
-move and logged as repairs, and illegal communications are dropped rather
-than downgraded to a more public channel, so a privacy failure cannot leak
-content (Appendix~\ref{app:schema}).
-
 
 \section{Event schema and run artifacts}
 \label{app:schema}
@@ -1069,39 +1075,29 @@ provider sampling, which is why entrant comparisons are made within
 identical seeded deals and reported with bootstrap intervals over seeds.
 
 \paragraph{Prompt versioning.} Every result here is tied to a specific
-prompt revision, and we pin it deliberately. The condition used throughout
-is the neutral \emph{surface} reproduced in \S\ref{app:prompts}: a system
-message plus four phase instruction blocks that state the rules, the
-schemas, and the objective, and say nothing about whether communicating is
-worthwhile. The elicitation arms (\S\ref{sec:elicitation}) differ from it
-only by the paragraphs quoted there.
+prompt revision. The condition used throughout is the neutral \emph{surface}
+reproduced in \S\ref{app:prompts}: a system message plus four phase
+instruction blocks that state the rules, the schemas, and the objective, and
+say nothing about whether communicating is worthwhile. The elicitation arms
+(\S\ref{sec:elicitation}) differ from it only by the paragraphs quoted
+there. Operationally, one environment variable selects every literal of the
+published condition at once---system message and all four phase blocks---and
+a regression test asserts each is byte-identical to the archived text, so
+the condition cannot drift one literal at a time (\S\ref{sec:promptsurface}).
 
-We say ``surface'' rather than ``prompt'' because the distinction cost us
-six seeds (\S\ref{sec:promptsurface}). One environment variable now selects
-every literal in the published condition at once---system message and all
-four phase blocks---and a regression test asserts each is byte-identical to
-the archived text, so the condition cannot drift one literal at a time. The
-generalization we would press on anyone building a multi-phase harness: the
-number of prompt literals your experiment depends on is at least the number
-of phases it has, and a pin that covers a proper subset of them is not a
-pin.
-
-This matters because the finding provoked a change to the system it was
-measuring. After these experiments were run, the environment's default
-prompt was rewritten to frame the game as one of influence rather than
-cards---telling agents outright that a player who only plays their cards is
-ignoring the actual game. That revision is a reasonable response to the
-observation and it is the version a future user of the framework will meet,
-but it is emphatically \emph{not} the condition measured here: it is closer
-to our elicited arm than to our default one. Reproducing the numbers in
-this paper requires the prompt as pinned above, and any comparison against
-a later default is a comparison across two different experiments.
-
-We record this partly as a caution. The gap between affordance and adoption
-is the kind of finding that invites an immediate fix at the prompt layer,
-and once that fix lands the original measurement is no longer reproducible
-from the tip of the codebase. An evaluation claim is only as durable as the
-prompt revision it names.
+\paragraph{The measured condition is not the current default.} After these
+experiments were run, the environment's default prompt was rewritten to
+frame the game as one of influence rather than cards, telling agents
+outright that a player who only plays their cards is ignoring the actual
+game. That is a reasonable response to the finding and it is the version a
+future user of the framework will meet, but it sits closer to our elicited
+arm than to our default one and is emphatically \emph{not} the condition
+measured here. Reproducing these numbers requires the prompt as pinned
+above; any comparison against a later default compares two different
+experiments. The caution generalizes: a gap between affordance and adoption
+invites an immediate fix at the prompt layer, and once that fix lands the
+original measurement is no longer reproducible from the tip of the codebase.
+An evaluation claim is only as durable as the prompt revision it names.
 
 Scripted-bot results (\S\ref{sec:validity}) are exactly reproducible with
 no API access and no tokens: they depend only on the seed list. Model

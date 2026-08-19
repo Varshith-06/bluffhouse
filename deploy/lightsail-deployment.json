@@ -1,0 +1,26 @@
+{
+  "containers": {
+    "app": {
+      "image": "IMAGE_REF",
+      "environment": {
+        "PORT": "8080",
+        "BLUFFHOUSE_RUNS": "/app/runs"
+      },
+      "ports": {
+        "8080": "HTTP"
+      }
+    }
+  },
+  "publicEndpoint": {
+    "containerName": "app",
+    "containerPort": 8080,
+    "healthCheck": {
+      "path": "/",
+      "successCodes": "200-399",
+      "intervalSeconds": 10,
+      "timeoutSeconds": 5,
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 5
+    }
+  }
+}
