@@ -150,7 +150,7 @@ ladder}, from pure poker up to unrefereed manipulation, adding one social
 channel at a time so that running the same entrants over the same seeds
 across modes isolates which channel a behaviour depends on. Attributing
 \emph{chips} to a channel by differencing across modes is bounded by agent
-sampling variance, for reasons \S\ref{sec:ladder} makes precise. Three
+sampling variance, for reasons \S\ref{sec:main} makes precise. Three
 findings then follow from running the instrument, and none is specific to
 cards.
 
@@ -167,7 +167,8 @@ varying elicitation while holding the environment fixed
 channels and state why; under one directive they use them on every
 opportunity.
 
-\textbf{5. Elicitation selects the channel, not merely the volume.} A prompt
+\textbf{5. Elicitation selects the channel, not merely the volume (metric
+design).} A prompt
 that \emph{argues} for the private channels, quoting their interception odds
 instead of compelling speech, is the only condition in which the covert layer
 carried traffic at all: 62\% adoption, 55\% of it whispered, against the
@@ -179,14 +180,13 @@ volume is the axis that misleads.
 
 \textbf{6. An experimental condition is a prompt surface, not a prompt
 (reproducibility).} A multi-phase harness renders a separate instruction block
-per phase, each an independently editable literal, so a pin covering a subset
-of them is not a pin. We establish this the expensive way: with the system
+per phase, each independently editable, so a pin covering a subset of them
+is not a pin. We establish this the expensive way: with the system
 message pinned and the talk-phase block free to drift, six of eight seeds
 changed condition without failing a test, logging a fault, or producing a
 visibly anomalous table (\S\ref{sec:promptsurface}). What surfaced it was an
-artifact policy rather than a code review---the fully rendered prompt is
-stored beside every provider call---which is also the cheapest remedy we can
-recommend.
+storing the fully rendered prompt beside every provider call---also the
+cheapest remedy we can recommend.
 
 We benchmark Gemma-4-31B and Mistral Medium against a random-bot control
 across modes and seeds with bootstrap intervals, add Gemini~3.1 Flash Lite in
@@ -398,11 +398,10 @@ strict-JSON replies get one repair round trip before fallback.
 
 The roster is bounded by free-tier API access, a boundary worth reporting
 rather than hiding: one mode-6 game costs roughly nine provider calls per
-seat per hand, so a single duplicate cycle exceeds the daily allowance of
-every free tier we tested except two. Trajectory-level social evaluation is
-expensive in a way single-turn benchmarks are not, and the cost falls on
-the axis---repeated trials---where evaluations can least afford to
-economize.
+seat per hand, so a single duplicate cycle exhausts all but two of the free
+tiers we tested. Trajectory-level social evaluation is expensive in a way
+single-turn benchmarks are not, and the cost falls on repeated trials---the
+axis where an evaluation can least afford to economize.
 
 \subsection{Validating the instrument}
 \label{sec:validity}
@@ -473,12 +472,9 @@ default arm. Explicit direction changes everything: 19 of 19, every one
 well formed and carrying a plausible private intent---\emph{``Tight table,
 huh?''}, purpose ``probe table dynamics and set up a loose image for future
 bluffs''. Between ``available'' and ``used'' lies a gap that no amount of
-affordance closes and that one directive closes completely.
-
-All 19 directed messages were public \texttt{speech}: compelled to
-communicate, models reach for the one channel with no concealment, no
-addressee, and no risk, leaving every metric the perception machinery can
-price at zero.
+affordance closes and that one directive closes completely---though all 19
+messages were public \texttt{speech}, the one channel with no concealment,
+no addressee, and no risk.
 
 \textbf{(4) Elicitation selects the channel, not just the volume.} The
 fourth condition holds the system message, schema, channels, and environment
@@ -602,8 +598,7 @@ the mean and widened one interval across zero, which reads as ordinary
 variance. What exposed it was neither the code nor the summary statistics
 but the archived transcripts: because every provider call stores its fully
 rendered prompt, the two conditions could be diffed character by character
-and the drift localized to one instruction block. We draw three
-conclusions, none specific to poker.
+and the drift localized to one instruction block.
 
 The repair doubles as the cleanest experiment here. Re-running all eight
 seeds under a surface pinned end to end---same models, decks, seats and
@@ -688,7 +683,7 @@ control, and cover have no data behind them. What the table measures is
 no-limit hold'em skill plus protocol discipline, at a table that offered a
 social game nobody played.
 
-\textbf{What differencing cannot do.}\label{sec:ladder} Modes 0 and 6 present
+\textbf{What differencing cannot do.} Modes 0 and 6 present
 the same entrants with the same seeded deals, so a model extracting value
 from the social channels should move between them. It does not,
 instructively: on seed 41 the modes are the same game to within one adjusted
@@ -710,7 +705,7 @@ measurable.
 
 \textbf{Social skill is entangled with poker skill.} A model can win mode~6
 by playing better poker and ignoring the social layer, which is exactly
-what happened. The ladder was our control, and \S\ref{sec:ladder} shows
+what happened. The ladder was our control, and \S\ref{sec:main} shows
 that differencing across modes inherits agent sampling variance large
 enough to swamp the effect: it isolates \emph{which channel} a behaviour
 needs but does not attribute \emph{value} to one.
@@ -720,23 +715,20 @@ the most serious limitation. Two models of moderate size declined the
 social channels and a third behaved identically in pilots, but we cannot
 conclude that frontier models would, and long-horizon planning is exactly
 the capability that makes a hand-1 codebook worth setting up for a hand-4
-payoff. What we can say is stronger than it may appear: the declination is
-not a capability ceiling, since the same models communicate competently
-when directed; not a parsing artifact, since schema misses are zero across
-692 offers; and not noise, since it holds in every rotation of every seed
-under both the neutral and the socially framed prompt. It is, however,
-prompt-fragile in a specific direction, so the honest statement is about a
-surface rather than about the models---these models decline these channels
-under a prompt that does not advocate for them---which is the shape of
-claim \S\ref{sec:promptsurface} argues results should be forced to take. A
+payoff. The declination is not a capability ceiling, not a parsing
+artifact, and not noise; \S\ref{sec:elicitation} eliminates all three. It
+is, however, prompt-fragile in a specific direction, so the honest statement
+is about a surface rather than about the models---these models decline these
+channels under a prompt that does not advocate for them---and that is the
+shape of claim \S\ref{sec:promptsurface} argues results should be forced to
+take. A
 probe suggests the pattern persists at scale (two much larger models, 550B
 and 120B, produced five well-formed talk decisions between them, all
 declining), but five decisions is not a result; running it at frontier
-scale is the first experiment we would fund.
-
-Deals are generated procedurally from seeds, so the benchmark cannot be
-memorized and adding seeds is purely a matter of budget---which
-\S\ref{sec:main} shows is the binding constraint on every claim here.
+scale is the first experiment we would fund. Deals are generated
+procedurally from seeds, so the benchmark cannot be memorized and adding
+seeds is purely a matter of budget---which \S\ref{sec:main} shows is the
+binding constraint on every claim here.
 
 \textbf{Building a deception gym responsibly.} An environment that rewards
 misleading other agents deserves a boundary. Ours is drawn at the game:
@@ -768,7 +760,7 @@ published condition, a byte-identity test, and the rendered prompt stored
 beside every call---the cheapest of the four to implement, and the only one
 whose absence silently changes what a run measures.
 
-\subsection*{Conclusion}
+\section*{Conclusion}
 
 \textsc{BluffHouse} measures deception, detection, and information control
 without a judge, and the instrument's most useful reading is a null one: a
@@ -1073,6 +1065,10 @@ alone regenerates every agent's subjective world. Determinism is enforced
 per mode by the test suite. The only nondeterminism in a benchmark run is
 provider sampling, which is why entrant comparisons are made within
 identical seeded deals and reported with bootstrap intervals over seeds.
+The environment, the benchmark harness, the analysis scripts, and the
+archived run artifacts behind every table and figure are released under an
+open licence; the repository is withheld here for anonymity and linked in
+the camera-ready version.
 
 \paragraph{Prompt versioning.} Every result here is tied to a specific
 prompt revision. The condition used throughout is the neutral \emph{surface}
