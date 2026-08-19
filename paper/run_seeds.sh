@@ -26,20 +26,20 @@ cd "$(dirname "$0")/.."
 KEYS_ENV="${KEYS_ENV:-C:/Users/Varshith/AppData/Local/Temp/claude/C--Users-Varshith-Documents-bluffhouse/73626d41-e02b-4bc4-af1c-5b65ecb37318/scratchpad/keys.env}"
 if [ -f "$KEYS_ENV" ]; then source "$KEYS_ENV"; fi
 
-export BLUFFHOUSE_SYSTEM_PROMPT=neutral
-export BLUFFHOUSE_MAX_TOKENS=2000
-export BLUFFHOUSE_LLM_RETRIES=5
+export BLUFFHOUSE_SYSTEM_PROMPT="${BLUFFHOUSE_SYSTEM_PROMPT:-neutral}"
+export BLUFFHOUSE_MAX_TOKENS="${BLUFFHOUSE_MAX_TOKENS:-2000}"
+export BLUFFHOUSE_LLM_RETRIES="${BLUFFHOUSE_LLM_RETRIES:-5}"
 # free-tier ceilings are published per model
-export BLUFFHOUSE_GEMMA_4_31B_IT_RPM=24
+export BLUFFHOUSE_GEMMA_4_31B_IT_RPM="${BLUFFHOUSE_GEMMA_4_31B_IT_RPM:-24}"
 # Gemma answers in ~13s, so at concurrency 1 a seed spends ~36 minutes waiting
 # on a 24 RPM budget it never comes close to using. Five in flight saturates
 # the rate gate instead of the socket; the gate, not the semaphore, is what
 # keeps us inside the quota. Scheduling only -- rotations are independent
 # games, so this changes throughput and nothing about the results.
-export BLUFFHOUSE_GOOGLE_CONCURRENCY=5
-export BLUFFHOUSE_MISTRAL_CONCURRENCY=3
-export BLUFFHOUSE_MISTRAL_MEDIUM_LATEST_RPM=50
-export BLUFFHOUSE_GEMINI_3_1_FLASH_LITE_RPM=12
+export BLUFFHOUSE_GOOGLE_CONCURRENCY="${BLUFFHOUSE_GOOGLE_CONCURRENCY:-5}"
+export BLUFFHOUSE_MISTRAL_CONCURRENCY="${BLUFFHOUSE_MISTRAL_CONCURRENCY:-3}"
+export BLUFFHOUSE_MISTRAL_MEDIUM_LATEST_RPM="${BLUFFHOUSE_MISTRAL_MEDIUM_LATEST_RPM:-50}"
+export BLUFFHOUSE_GEMINI_3_1_FLASH_LITE_RPM="${BLUFFHOUSE_GEMINI_3_1_FLASH_LITE_RPM:-12}"
 
 PUBLISHED="google:gemma-4-31b-it,mistral:mistral-medium-latest,random"
 WIDE="google:gemma-4-31b-it,mistral:mistral-medium-latest,google:gemini-3.1-flash-lite,random"
