@@ -51,6 +51,13 @@ case "${1:-redo}" in
   wide)     # third model family; flash-lite's 500/day caps this to ~1 seed/day
     uv run bluffhouse bench --models "$WIDE" --hands "$HANDS" --mode 6 \
       --seeds "${SEEDS:-41,42}" --out runs/e1-wide ;;
+  more)     # extend the CORRECTED pinned bench with fresh seeds. Resumes
+            # runs/e1-ext (a copy of e1-pinned) so the published 8-seed
+            # result survives intact if a longer run has to be abandoned.
+            # Completed seed dirs are reused, so this only pays for new seeds.
+    uv run bluffhouse bench --hands "$HANDS" --mode 6 \
+      --seeds "${SEEDS:-41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56}" \
+      --resume runs/e1-ext/20260818-160459-seeds ;;
   mode0)    # ladder floor on whatever seeds the mode-6 bench has
     uv run bluffhouse bench --models "$PUBLISHED" --hands "$HANDS" --mode 0 \
       --seeds "${SEEDS:-41,42,43,44,45,46,47,48}" --no-beliefs \
