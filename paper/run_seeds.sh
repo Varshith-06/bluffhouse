@@ -56,7 +56,7 @@ case "${1:-redo}" in
             # result survives intact if a longer run has to be abandoned.
             # Completed seed dirs are reused, so this only pays for new seeds.
     uv run bluffhouse bench --hands "$HANDS" --mode 6 \
-      --seeds "${SEEDS:-41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56}" \
+      --seeds "${SEEDS:-41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64}" \
       --resume runs/e1-ext/20260818-160459-seeds ;;
   mode0)    # ladder floor on whatever seeds the mode-6 bench has
     uv run bluffhouse bench --models "$PUBLISHED" --hands "$HANDS" --mode 0 \
