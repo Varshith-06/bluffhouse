@@ -31,6 +31,13 @@ export BLUFFHOUSE_MAX_TOKENS=2000
 export BLUFFHOUSE_LLM_RETRIES=5
 # free-tier ceilings are published per model
 export BLUFFHOUSE_GEMMA_4_31B_IT_RPM=24
+# Gemma answers in ~13s, so at concurrency 1 a seed spends ~36 minutes waiting
+# on a 24 RPM budget it never comes close to using. Five in flight saturates
+# the rate gate instead of the socket; the gate, not the semaphore, is what
+# keeps us inside the quota. Scheduling only -- rotations are independent
+# games, so this changes throughput and nothing about the results.
+export BLUFFHOUSE_GOOGLE_CONCURRENCY=5
+export BLUFFHOUSE_MISTRAL_CONCURRENCY=3
 export BLUFFHOUSE_MISTRAL_MEDIUM_LATEST_RPM=50
 export BLUFFHOUSE_GEMINI_3_1_FLASH_LITE_RPM=12
 
