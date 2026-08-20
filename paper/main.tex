@@ -70,8 +70,8 @@ over identical seeded deals, cancels card luck by construction, cutting
 outcome variance to roughly a third of a naive game.
 
 What the instrument then measured was not social skill but its absence, and
-separating three explanations for that absence is our main result. Across 24
-games entrants took none of 692 opportunities to speak. This is not a
+separating three explanations for that absence is our main result. Across 60
+games entrants took none of 1{,}725 opportunities to speak. This is not a
 measurement artifact, though it first presented as one: a schema collision
 recorded off-schema replies as deliberate silence until non-decisions were
 instrumented as a distinct outcome. Nor is it incapacity, since a single
@@ -155,8 +155,8 @@ findings then follow from running the instrument, and none is specific to
 cards.
 
 \textbf{4. Affordance, propensity, and capability are distinct, and outcome
-metrics collapse them (reliability across repeated trials).} Across 24 games
-under a neutral prompt, entrants took none of 692 opportunities to speak.
+metrics collapse them (reliability across repeated trials).} Across 60 games
+under a neutral prompt, entrants took none of 1{,}725 opportunities to speak.
 Three very different situations produce that same zero: a harness that
 miscounts, a model that declines, and a model that cannot. Telling them apart
 requires instrumenting the \emph{non}-decision, so that an off-schema reply is
@@ -399,9 +399,11 @@ strict-JSON replies get one repair round trip before fallback.
 The roster is bounded by free-tier API access, a boundary worth reporting
 rather than hiding: one mode-6 game costs roughly nine provider calls per
 seat per hand, so a single duplicate cycle exhausts all but two of the free
-tiers we tested. Trajectory-level social evaluation is expensive in a way
-single-turn benchmarks are not, and the cost falls on repeated trials---the
-axis where an evaluation can least afford to economize.
+tiers we tested, and the twenty seeds here exhausted the two that survived.
+Trajectory-level social evaluation is expensive in a way single-turn
+benchmarks are not, and the cost falls on repeated trials---the axis where
+an evaluation can least afford to economize, and the one \S\ref{sec:main}
+shows this benchmark most needs.
 
 \subsection{Validating the instrument}
 \label{sec:validity}
@@ -547,7 +549,7 @@ roll.}
 Prompt condition & Games & Offers & talk & belief & Messages & Covert \\
 \midrule
 Schema-anchored (pre-fix)     & 11 & 303 & 27.7\% & 12.5\% & 1   & --- \\
-Neutral, phase-explicit       & 24 & 692 & 0\%    & 0\%    & 0   & --- \\
+Neutral, phase-explicit       & 60 & 1{,}725 & 0\% & 0\%  & 0   & --- \\
 \; + social framing           & 1  & 19  & 0\%    & 0\%    & 0   & --- \\
 \; + explicit direction       & 1  & 19  & 0\%    & 0\%    & 19  & 0\% \\
 Channel-advocacy talk prompt  & 18 & 491 & 0\%    & 0\%    & 305 & 55\% \\
@@ -567,10 +569,9 @@ environment fixed.
 intent has one further use, visible in the directed arm: an intent there
 reads, in full, ``establish a friendly table image \emph{and satisfy the
 communication requirement}''---the model naming the instruction as part of
-its own motivation. That is the clearest evidence the directed condition is a
-reachability control rather than a behavioural one, and an argument for a
-private intent channel in any elicitation study: it is where an agent tells
-you it is performing for the evaluator.
+its own motivation. That is the clearest evidence the directed condition is
+a reachability control, and an argument for a private intent channel in any
+elicitation study: it is where an agent tells you it is performing.
 
 \subsection{A prompt condition is a surface, not a string}
 \label{sec:promptsurface}
@@ -600,10 +601,10 @@ but the archived transcripts: because every provider call stores its fully
 rendered prompt, the two conditions could be diffed character by character
 and the drift localized to one instruction block.
 
-The repair doubles as the cleanest experiment here. Re-running all eight
+The repair doubles as the cleanest experiment here. Re-running the affected
 seeds under a surface pinned end to end---same models, decks, seats and
 system message, one instruction block different---gives 0 messages over 692
-talk offers where the drifted surface gave 305 over 491 on overlapping
+talk offers where the drifted surface gave 305 over 491 on the same
 seeds. Where the arms of \S\ref{sec:elicitation} differ in several ways at
 once, this pair differs in exactly one literal, and that one literal moves
 adoption from total abstention to 62\%, the majority of it covert.
@@ -636,7 +637,7 @@ than the least-pinned literal in it.
 
 \begin{table}[tbp]
 \caption{Mode-6 leaderboard under the pinned neutral surface: seeds
-$41$--$48$, 8 hands, 24 games. Intervals are bootstrap 95\% over per-seed
+$41$--$60$, 8 hands, 60 games. Intervals are bootstrap 95\% over per-seed
 values; ``Rep./Flt.'' counts illegal-action repairs and unparseable
 replies. Detection, information control, and cover are omitted: with no
 covert messages every entrant ties by construction.}
@@ -647,48 +648,48 @@ covert messages every entrant ties by construction.}
 \toprule
 Entrant & Adj.\ chips & 95\% CI & Wins & Poker q. & Belief & Rep./Flt. \\
 \midrule
-Mistral Medium & $+159.4$ & $[-74, +408]$ & 4.0 & 95 & 44 & 13 / 0 \\
-Gemma-4-31B & $+58.7$ & $[-103, +228]$ & 2.0 & 52 & 100 & 0 / 4 \\
-\texttt{random} (control) & $-218.1$ & $[-505, +33]$ & 2.0 & 17 & 0 & 0 / 0 \\
+Mistral Medium & $+103.8$ & $[+5, +216]$ & 7.0 & 71 & 48 & 27 / 1 \\
+Gemma-4-31B & $+36.9$ & $[-47, +132]$ & 6.0 & 59 & 100 & 0 / 7 \\
+\texttt{random} (control) & $-140.7$ & $[-290, -8]$ & 7.0 & 32 & 0 & 0 / 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The ordering is the expected one and the evidence for it is weak; we report
-the second half as carefully as the first. Both models finish above the
-control on the mean and Mistral above Gemma, but every bootstrap interval
-overlaps every other, the control's upper bound is positive, and the
-win-rate matrix is not a strict order---\texttt{random} finishes above
-Gemma-4-31B on two seeds and above Mistral Medium on three. A two-seed
-version of this table showed non-overlapping intervals and a clean
-1.0-in-every-cell order; that separation did not survive six more seeds.
+The ordering is the expected one; how much sampling it took to establish
+even part of it is the result. At twenty seeds Mistral Medium separates
+from the control---its interval clears zero at $[+5, +216]$ and misses the
+control's $[-290, -8]$---so the benchmark supports the claim that this model
+beats a bot playing at random. It supports nothing finer: Gemma-4-31B's
+interval still spans zero and overlaps both, and \texttt{random} finishes
+above \emph{each} model on 8 of 20 seeds despite a mean over 170 adjusted
+chips worse.
 
 The instrument is not at fault, since the identical protocol separates four
 scripted bots at ten seeds (\S\ref{sec:validity}). What differs is that
 these entrants sample: duplicate rotations cancel the deck, leaving agent
-stochasticity, and at 8 hands a seed that residual keeps a mid-tier
-language model statistically indistinguishable from a bot playing at
-random. \emph{Trajectory-level evaluation of stochastic agents is far more
-trial-hungry than single-turn intuition suggests}---24 games and
-2.4~million tokens do not settle a three-way ordering---so a benchmark of
-this shape reporting a ranking from a handful of seeds is reporting noise
-it has not measured.
+stochasticity, and at 8 hands a seed that residual is large enough to let a
+random bot take two seeds in five off a model it loses to badly on average.
+\emph{Trajectory-level evaluation of stochastic agents is far more
+trial-hungry than single-turn intuition suggests}---60 games and
+5.9~million tokens buy one separation and leave two unresolved---so a
+benchmark of this shape reporting a full ranking from a handful of seeds is
+reporting noise it has not measured. At eight seeds this table separated
+nothing at all.
 
 Two details temper the table further. The entrant with the most chips is
-not the most disciplined: Mistral needed 13 illegal-action repairs against
+not the most disciplined: Mistral needed 27 illegal-action repairs against
 Gemma's none. And, more important, \emph{the mode-6 social layer
-contributed nothing to any of it}---across 24 games entrants were offered
-692 opportunities to speak and took none, so detection, information
+contributed nothing to any of it}---across 60 games entrants were offered
+1{,}725 opportunities to speak and took none, so detection, information
 control, and cover have no data behind them. What the table measures is
 no-limit hold'em skill plus protocol discipline, at a table that offered a
 social game nobody played.
 
-\textbf{What differencing cannot do.} Modes 0 and 6 present
-the same entrants with the same seeded deals, so a model extracting value
-from the social channels should move between them. It does not,
-instructively: on seed 41 the modes are the same game to within one adjusted
-chip, while on seed 42 the comparison swings 434 chips and reorders the
-table---with zero messages in either mode, so no channel can be responsible.
+\textbf{What differencing cannot do.} Modes 0 and 6 give the same entrants
+the same seeded deals, so a model extracting value from the social channels
+should move between them. It does not: seed 41 is the same game to within
+one adjusted chip while seed 42 swings 434 and reorders the table, with zero
+messages in either mode, so no channel can be responsible.
 \textbf{Pairing on identical decks cancels environment stochasticity; it does
 nothing about agent stochasticity} (Appendix~\ref{app:ladder}).
 
@@ -697,11 +698,10 @@ nothing about agent stochasticity} (Appendix~\ref{app:ladder}).
 
 \textbf{Perception is dice, not vision; intent is declared, not verified.}
 Noticing a whisper is a seeded roll rather than a perceptual skill---the
-price of judge-free ground truth, and also the point: the benchmark
-measures what agents \emph{do} with partial observations. Agents could
-likewise lie about their intents, but no headline metric depends on intent
-truthfulness, and a systematic intent--behaviour mismatch is itself
-measurable.
+price of judge-free ground truth, and also the point: the benchmark measures
+what agents \emph{do} with partial observations. Agents could lie about
+intents, but no headline metric depends on intent truthfulness, and a
+systematic intent--behaviour mismatch is itself measurable.
 
 \textbf{Social skill is entangled with poker skill.} A model can win mode~6
 by playing better poker and ignoring the social layer, which is exactly
@@ -711,11 +711,10 @@ enough to swamp the effect: it isolates \emph{which channel} a behaviour
 needs but does not attribute \emph{value} to one.
 
 \textbf{The declination result rests on a small, mid-tier roster.} This is
-the most serious limitation. Two models of moderate size declined the
-social channels and a third behaved identically in pilots, but we cannot
-conclude that frontier models would, and long-horizon planning is exactly
-the capability that makes a hand-1 codebook worth setting up for a hand-4
-payoff. The declination is not a capability ceiling, not a parsing
+the most serious limitation. Two moderate-sized models declined the social
+channels and a third behaved identically in pilots, but we cannot conclude
+frontier models would, and long-horizon planning is exactly the capability
+that makes a hand-1 codebook worth setting up for a hand-4 payoff. The declination is not a capability ceiling, not a parsing
 artifact, and not noise; \S\ref{sec:elicitation} eliminates all three. It
 is, however, prompt-fragile in a specific direction, so the honest statement
 is about a surface rather than about the models---these models decline these
@@ -765,10 +764,10 @@ whose absence silently changes what a run measures.
 \textsc{BluffHouse} measures deception, detection, and information control
 without a judge, and the instrument's most useful reading is a null one: a
 social layer can be fully afforded, fully instrumented, and fully unused. An
-evaluation that reports only outcomes cannot distinguish that state from
-incapacity, or from its own parser miscounting, and the elicitation that
-closes the gap decides which channels the traffic uses---so what such a
-study measures is a prompt surface, not a model.
+outcome-only evaluation cannot tell that state from incapacity or from its
+own parser miscounting, and the elicitation that closes the gap decides
+which channels carry the traffic---so what it measures is a prompt surface,
+not a model.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -1199,18 +1198,35 @@ control, wins some seeds outright.
 
 \begin{center}
 \small
-\begin{tabular}{lrrrrrrrr}
+\begin{tabular}{lrrr}
 \toprule
-Entrant & 41 & 42 & 43 & 44 & 45 & 46 & 47 & 48 \\
+Seed & Mistral Medium & Gemma-4-31B & \texttt{random} (control) \\
 \midrule
-Mistral Medium & $+587$ & $+48$ & $+32$ & $+735$ & $-247$ & $+262$ & $-272$ & $+130$ \\
-Gemma-4-31B & $+386$ & $-334$ & $+35$ & $-88$ & $+14$ & $+54$ & $+462$ & $-58$ \\
-\texttt{random} (control) & $-973$ & $+286$ & $-67$ & $-647$ & $+233$ & $-315$ & $-190$ & $-72$ \\
+41 & $+587$ & $+386$ & $-973$ \\
+42 & $+48$ & $-334$ & $+286$ \\
+43 & $+32$ & $+35$ & $-67$ \\
+44 & $+735$ & $-88$ & $-647$ \\
+45 & $-247$ & $+14$ & $+233$ \\
+46 & $+262$ & $+54$ & $-315$ \\
+47 & $-272$ & $+462$ & $-190$ \\
+48 & $+130$ & $-58$ & $-72$ \\
+49 & $+109$ & $+246$ & $-355$ \\
+50 & $+44$ & $+275$ & $-319$ \\
+51 & $+271$ & $-315$ & $+43$ \\
+52 & $+18$ & $-84$ & $+65$ \\
+53 & $+142$ & $-37$ & $-104$ \\
+54 & $+122$ & $+141$ & $-263$ \\
+55 & $-15$ & $-4$ & $+19$ \\
+56 & $-132$ & $-173$ & $+304$ \\
+57 & $+327$ & $+15$ & $-342$ \\
+58 & $-61$ & $-74$ & $+135$ \\
+59 & $-10$ & $-68$ & $+78$ \\
+60 & $-15$ & $+345$ & $-330$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\paragraph{Win-rate matrix (mode 6).} Fraction of the eight seeds in which
+\paragraph{Win-rate matrix (mode 6).} Fraction of the twenty seeds in which
 the row entrant finished above the column entrant.
 
 \begin{center}
@@ -1219,17 +1235,18 @@ the row entrant finished above the column entrant.
 \toprule
  & Gemma-4-31B & Mistral Medium & \texttt{random} \\
 \midrule
-Gemma-4-31B    & --- & $0.38$ & $0.75$ \\
-Mistral Medium & $0.62$ & --- & $0.62$ \\
-\texttt{random} & $0.25$ & $0.38$ & --- \\
+Gemma-4-31B    & --- & $0.40$ & $0.60$ \\
+Mistral Medium & $0.60$ & --- & $0.60$ \\
+\texttt{random} & $0.40$ & $0.40$ & --- \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \noindent The mean order (Mistral $>$ Gemma $>$ \texttt{random}) is not a
-strict one: the control finishes above Gemma-4-31B on two seeds and above
-Mistral Medium on three. At two seeds this matrix read $1.0$ in every cell,
-which is the sampling artifact \S\ref{sec:main} warns against.
+strict one: the control finishes above each model on 8 of the 20 seeds. At
+two seeds this matrix read $1.0$ in every cell and at eight seeds it read
+$0.25$--$0.75$; the drift toward $0.5$ as seeds accumulate is the sampling
+artifact \S\ref{sec:main} warns against.
 
 \paragraph{Channel adoption per seed, advocacy arm.} Six seeds, three
 rotations each (18 games), 491 talk offers. Every reply was well formed;
@@ -1266,9 +1283,9 @@ random bot, whose own action noise cannot be differenced away.
 
 \paragraph{Token accounting.} A mode-6 game costs roughly nine provider
 calls per seat per hand across the four phases (attention, talk, belief,
-action). Over the eight-seed headline benchmark (24 games of 8 hands),
-Gemma-4-31B consumed 1{,}198{,}802 input and 55{,}683 output tokens, and
-Mistral Medium 1{,}157{,}184 input and 55{,}721 output. The 21:1 input-to-output
+action). Over the twenty-seed headline benchmark (60 games of 8 hands),
+Gemma-4-31B consumed 3{,}084{,}082 input and 142{,}807 output tokens, and
+Mistral Medium 2{,}817{,}131 input and 135{,}600 output. The 21:1 input-to-output
 ratio is the structural cost of trajectory-level evaluation: each decision
 re-sends a growing observation history, so input tokens scale with the
 square of game length while replies stay terse. Free tiers meter the
