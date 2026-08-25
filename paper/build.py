@@ -22,7 +22,16 @@ TECTONIC = shutil.which("tectonic") or str(
 
 SUBMISSION = r"\usepackage[dblblindworkshop]{neurips_2026}"
 FINAL = r"\usepackage[final,dblblindworkshop]{neurips_2026}"
-ANON_MARKERS = ["Paluru", "Chadalavada", "IIITM", "Gwalior", "Rice University"]
+ANON_MARKERS = [
+    "Paluru",
+    "Chadalavada",
+    "IIITM",
+    "Gwalior",
+    "Rice University",
+    "iiitm.ac.in",
+    "rice.edu",
+    "saivarshith2006",
+]
 
 
 def main() -> int:
