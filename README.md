@@ -260,7 +260,7 @@ uv run bluffhouse bench \
 
 Results land on the Leaderboard page: rankings, dimension scores, win-rate heatmaps, and one full replay per rotation.
 
-**5. Run the tests.** 102 Python tests plus a golden-fixture suite for the viewer, and none of them spend a token. The entire LLM path runs against a deterministic mock.
+**5. Run the tests.** 111 Python tests plus a golden-fixture suite for the viewer, and none of them spend a token. The entire LLM path runs against a deterministic mock.
 
 ```bash
 uv run pytest
@@ -313,8 +313,43 @@ bluffhouse/
 │   ├── viewer/                    # single-file React replay build
 │   └── webapp/static/             # the built React app served by `bluffhouse serve`
 ├── web/                           # frontend source: Vite + React + TypeScript
-└── tests/                         # 102 Python tests + a vitest suite, token-free
+└── tests/                         # 111 Python tests + a vitest suite, token-free
 ```
+
+## Paper artifacts
+
+`runs-paper-artifacts.tar.gz` (6.9 MB) holds the complete run artifacts behind
+every table in the paper — event logs, per-agent observation streams, and the
+full provider transcripts, including each call's rendered prompt, its reply,
+token counts and parse faults. Every number in the paper recomputes from these
+without re-querying any provider.
+
+```bash
+tar -xzf runs-paper-artifacts.tar.gz            # unpacks into runs/
+uv run python paper/analysis.py leaderboard runs/e1-ext/20260818-160459-seeds
+```
+
+That command prints the paper's main table (20 seeds, 8 hands, mode 6) as the
+LaTeX row it appears as. `analysis.py` also takes `variance <sweep-dir>` and
+`bench <bench-dir>`.
+
+| Bundle path | What it backs |
+| ----------- | ------------- |
+| `runs/e1-ext/` | Main mode-6 leaderboard, seeds 41–60 |
+| `runs/e1-pinned/` | The same benchmark under the pinned prompt surface, seeds 41–48 |
+| `runs/e1-final/`, `runs/e1-mode6/` | Earlier mode-6 benches, including the drifted-surface run |
+| `runs/e2-mode0/` | Mode-0 (pure poker) arm of the mode-0 vs mode-6 comparison |
+| `runs/e3-bots/` | Scripted-bot instrument validation, ten seeds, zero tokens |
+| `runs/arm-a`, `arm-b`, `arm-c` | The elicitation ladder: default, social framing, explicit direction |
+| `runs/20260818-*-seed*` | Single-seed runs, including the pre-fix schema-anchored games |
+
+Per-game `replay.html` viewers are excluded from the bundle — they are
+regenerated from the event logs and account for 124 MB of the 197 MB on disk.
+
+## License
+
+MIT — see [LICENSE](LICENSE). The environment, harness, analysis scripts and the
+released run artifacts are all covered.
 
 ## What's next
 

@@ -4,8 +4,11 @@ version = "0.1.0"
 description = "A seeded, symbolic, multi-agent poker harness for measuring social manipulation under uncertainty"
 readme = "README.md"
 authors = [
+    { name = "Sai Varshith Paluru", email = "saivarshith2006@gmail.com" },
     { name = "Hemesh Chadalavada", email = "55226601+hemeshch@users.noreply.github.com" }
 ]
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.116.0",
