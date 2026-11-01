@@ -1,28 +1,21 @@
 """Build the paper.
 
-    uv run python paper/build.py            # submission (anonymous, line numbers)
-    uv run python paper/build.py --final     # camera-ready (authors revealed)
+    uv run python paper/build.py
 
-Both builds come from the same main.tex; only the neurips_2026 package option
-differs, so the two can never drift apart.
+Builds main.pdf from main.tex and checks the author block reached the PDF.
 """
 
 import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).parent
 
-SUBMISSION = r"\usepackage[dblblindworkshop]{neurips_2026}"
-FINAL = r"\usepackage[final,dblblindworkshop]{neurips_2026}"
-
-# Words an author block carries without identifying anybody. "bluffhouse" is
-# here because the contribution footnote names the system, which is meant to
-# appear in both builds.
+# Words in the author block that are not worth checking for. "bluffhouse" is
+# here because the contribution footnote names the system.
 GENERIC = {
     "all", "and", "benchmarks", "bluffhouse", "carried", "computer", "computing",
     "contributed", "correspondence", "design", "engineering", "experimental",
@@ -45,15 +38,8 @@ def find_tectonic() -> str:
     return "tectonic"  # let the failure name the missing binary
 
 
-def anon_markers(src: str) -> list[str]:
-    """Every identifier the author block carries, read out of the block itself.
-
-    A hardcoded list would put a tidy roster of names, emails and institutions
-    in a file that ships in the repository, which is the one thing an
-    anonymised mirror of that repository must not serve. Deriving the list
-    keeps the check correct when the authors change and keeps the names in a
-    single place: main.tex, which a mirror can simply omit.
-    """
+def author_markers(src: str) -> list[str]:
+    """Every identifier the author block carries, read out of the block itself."""
     block = re.search(r"\\author\{(.*?)\n\}", src, re.S)
     if not block:
         return []
@@ -73,37 +59,21 @@ def anon_markers(src: str) -> list[str]:
 
 
 def main() -> int:
-    final = "--final" in sys.argv
     src = (HERE / "main.tex").read_text(encoding="utf-8")
-    markers = anon_markers(src)
+    markers = author_markers(src)
     if not markers:
-        print("could not read the author block; anonymity is unchecked")
+        print("could not read the author block")
         return 1
 
-    if final:
-        # only the uncommented package line, not the explanatory comments
-        # lambda replacement: FINAL contains backslashes re.sub would eat
-        src, n = re.subn(
-            rf"(?m)^{re.escape(SUBMISSION)}$", lambda _: FINAL, src, count=1
-        )
-        if n != 1:
-            print("could not find the submission \\usepackage line")
-            return 1
-        target = HERE / "main-camera-ready.tex"
-        target.write_text(src, encoding="utf-8")
-        tex = target.name
-    else:
-        tex = "main.tex"
-
-    result = subprocess.run([find_tectonic(), tex], cwd=HERE)
+    result = subprocess.run([find_tectonic(), "main.tex"], cwd=HERE)
     if result.returncode:
         return result.returncode
 
-    pdf = HERE / (tex.replace(".tex", ".pdf"))
+    pdf = HERE / "main.pdf"
     try:
         from pypdf import PdfReader
     except ImportError:
-        print(f"built {pdf.name} (install pypdf to verify anonymity)")
+        print(f"built {pdf.name} (install pypdf to verify the authors)")
         return 0
 
     text = " ".join(p.extract_text() for p in PdfReader(str(pdf)).pages)
@@ -111,22 +81,10 @@ def main() -> int:
     # from extraction with a stray space in it. A name broken that way is still
     # a name: match with whitespace removed on both sides.
     squashed = re.sub(r"\s+", "", text)
-
-    def present(marker: str) -> bool:
-        return marker in text or re.sub(r"\s+", "", marker) in squashed
-
-    found = [m for m in markers if present(m)]
-    if final:
-        missing = [m for m in markers if not present(m)]
-        print(f"built {pdf.name} (camera-ready)")
-        print("  authors:", "all present" if not missing else f"MISSING {missing}")
-    else:
-        print(f"built {pdf.name} (submission)")
-        if found:
-            print(f"  ANONYMITY LEAK: {found} appear in the PDF")
-            return 1
-        print(f"  anonymity: none of {len(markers)} author identifiers in the PDF")
-    return 0
+    missing = [m for m in markers if re.sub(r"\s+", "", m) not in squashed]
+    print(f"built {pdf.name}")
+    print("  authors:", "all present" if not missing else f"MISSING {missing}")
+    return 1 if missing else 0
 
 
 if __name__ == "__main__":

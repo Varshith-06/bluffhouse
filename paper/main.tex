@@ -1,11 +1,8 @@
 \documentclass{article}
 
-% SUBMISSION (double-blind workshop): keep as-is. `dblblindworkshop` keeps the
-% author block anonymous and stamps the workshop name in the footer; the names
-% in \author below never reach the PDF.
-% CAMERA-READY: build with `python paper/build.py --final`, which adds [final].
-\usepackage[dblblindworkshop]{neurips_2026}
-\workshoptitle{Evaluation of Interactive Agents}
+% `preprint` prints the author block, stamps the footer "Preprint." and names no
+% venue. Build with `python paper/build.py`.
+\usepackage[preprint]{neurips_2026}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -30,12 +27,11 @@
   xrightmargin=4pt,
 }
 
-% Placeholder marker — every instance must be resolved before submission.
+% Placeholder marker — every instance must be resolved before release.
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
 
 \title{Affordance Is Not Adoption:\\Judge-Free Evaluation of Social Behaviour in Multi-Agent LLM Poker}
 
-% Hidden under the default (submission) style; revealed by the [final] option.
 \author{%
   Sai Varshith Paluru\thanks{Correspondence to
   \texttt{saivarshith2006@gmail.com}. The research reported here---experimental
@@ -1071,13 +1067,11 @@ provider sampling, which is why entrant comparisons are made within
 identical seeded deals and reported with bootstrap intervals over seeds.
 The environment, the benchmark harness, the analysis scripts, and the
 archived run artifacts behind every table and figure are released under an
-open licence, and an anonymised mirror of the repository is available for
-review at \url{https://anonymous.4open.science/r/bluffhouse-3435/}. It
-carries the run artifacts as a single archive at the repository root: the
+open licence in the repository at
+\url{https://github.com/Varshith-06/bluffhouse}. It carries the run artifacts as a single archive at the repository root: the
 event logs, per-agent observation streams and provider transcripts described
 below, from which \texttt{paper/analysis.py} reproduces every table without
-re-querying any provider. The unanonymised repository is linked in the
-camera-ready version.
+re-querying any provider.
 
 \paragraph{Prompt versioning.} Every result here is tied to a specific
 prompt revision. The condition used throughout is the neutral \emph{surface}
